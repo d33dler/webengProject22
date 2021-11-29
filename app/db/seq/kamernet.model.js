@@ -1,6 +1,7 @@
 const undef = "Undefined"
 const empty = "Empty"
 const {DataTypes} = require("sequelize");
+const e = require("express");
 
 module.exports = (sequelize, Sequelize) => {
     const Properties = sequelize.define('properties', {
@@ -11,9 +12,13 @@ module.exports = (sequelize, Sequelize) => {
             ignoreDuplicates: true,
             defaultValue: DataTypes.UUIDV4
         },
-        title: {
+        address: {
             type: DataTypes.STRING,
-            defaultValue: undef
+            defaultValue: empty
+        },
+        postalCode: {
+            type: DataTypes.STRING,
+            defaultValue: empty
         },
         city: {
             type: DataTypes.STRING,
@@ -27,9 +32,6 @@ module.exports = (sequelize, Sequelize) => {
                 value = parseInt(value);
                 this.setDataValue('areaSqm', value)
             }
-        },
-        address: {
-            type: DataTypes.STRING
         },
         rent: {
             type: DataTypes.INTEGER,

@@ -2,21 +2,22 @@ const db = require("../db/seq");
 const {Op, Sequelize} = require("sequelize");
 const {response} = require("express");
 const medianAverage = require("median-average");
+const converter = require('json-2-csv');
+
 
 // Create and upload a new property
 exports.create = (req, res) => {
     if (!req.body.externalId) {
         res.status(400).send({
-            message: "External ID is a primary key!"
+            message: "Missing External ID is a primary key!"
         });
         return;
     }
 
     const rentProp = {
-        title: req.body.title,
+        address: req.body.address,
         city: req.body.city,
         externalId: req.body.externalId,
-        address: req.body.address,
     };
 
     // Upload new property in the database
@@ -38,12 +39,12 @@ exports.id_find = (req, res) => {
     const id = req.params.id;
     var condition = id ? {externalId: {[Op.like]: `${id}`}} : null;
 
-    db.Properties.findOne({where: condition}).then(data => {
+    db.Properties.findOne({where: condition}).then(data => { //add not found
         res.send(data);
     }).catch(err => {
         res.status(500).send({
             message:
-                err.message || "Some error occurred while retrieving property."
+                err.message || "An error occurred while retrieving article."
         });
     });
 };
@@ -58,7 +59,7 @@ exports.id_update = (req, res) => {
     }).then(num => {
         if (num == 1) {
             res.send({
-                message: "Property was updated successfully."
+                message: "Article was updated successfully."
             });
         } else {
             res.send({
@@ -110,7 +111,9 @@ exports.lat_long_find = (req, res) => {
                 ]
         }
     }).then(data => {
-        res.send(data);
+        if(data.length === 0){
+            res.send({message: "0 Properties found at the provided location"})
+        } else res.send(data);
     }).catch(err => {
         res.status(500).send({
             message:
@@ -162,6 +165,7 @@ exports.lat_long_delete = (req, res) => {
 exports.active_budget_find = (req, res) => {
     const min = req.query.min;
     const max = req.query.max;
+    const format = req.query.format;
 
     db.Properties.findAll({
         where: {
@@ -170,9 +174,27 @@ exports.active_budget_find = (req, res) => {
                     {rent: {[Op.gte]: `${min}`}},
                     {rent: {[Op.lte]: `${max}`}}
                 ]
-        }
+        },
+        raw: true
     }).then(data => {
-        res.send(data);
+        if(data.length !== 0){
+            if (format === 'csv') {
+                console.log(data);
+                converter.json2csv(data, (err, csv) => {
+                    if (err) {
+                        res.status(500).send({
+                            message:
+                                err.message || "Some error occurred while retrieving property."
+                        });
+                    }
+                    res.set('Content-Type', 'text/csv');
+                    res.status(200).send(csv);
+                });
+            } else {
+                res.status(200).send(data);
+            }
+        } else res.status(200).send({message: "0 Articles found for the specified quarry"})
+
     }).catch(err => {
         res.status(500).send({
             message:
@@ -189,8 +211,8 @@ function activeFindByParam(param, req, res) {
     let city = req.params.city;
     city = city ? city : ''
     const ascending = req.query.ascending;
-    const n = req.query.n;
-    const asc = (ascending == 'true') ? 'ASC' : 'DESC';
+    const n = req.query.amount;
+    const asc = (ascending === 'true') ? 'ASC' : 'DESC';
     const seq = db.sequelize;
     db.Properties.findAll({
         limit: parseInt(n),
@@ -202,7 +224,7 @@ function activeFindByParam(param, req, res) {
                 ]
         },
         order: [[`${param}`, asc]]
-    }).then(data => {
+    }).then(data => { //add 0  prop msg
         res.send(data);
     }).catch(err => {
         res.status(500).send({
@@ -216,7 +238,7 @@ exports.statistics = (req, res) => {
     city = req.params.city;
     city = city ? city : ''
     const seq = db.Sequelize;
-    send_all_stats( seq, city, res)
+    send_all_stats(seq, city, res)
 }
 
 async function send_all_stats(seq, city, res) {

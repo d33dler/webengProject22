@@ -1,12 +1,13 @@
 const property = require("../app/controller/kamernet.controller");
 const nrp_control = require("../app/controller/kamernet.controller");
+
 module.exports = app => {
     const nrp_control = require("../app/controller/kamernet.controller");
 
     var router = require("express").Router();
 
     // Create a new property
-    router.post("/", nrp_control.create);
+    router.post("/new", nrp_control.create);
 
 
     // Retrieve a single Tutorial with id

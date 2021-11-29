@@ -27,6 +27,7 @@
     "sequelize": "^6.11.0"
   },
   "devDependencies": {
+    "json-2-csv": "^3.14.4",
     "sequelize-cli": "^6.3.0",
     "uuid": "^8.3.2"
   }

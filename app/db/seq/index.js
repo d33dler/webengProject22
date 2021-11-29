@@ -57,10 +57,10 @@ async function populateDb(jsonArr) {
     for (let i = 0; i < jsonArr.length; i++) {
         records.push({
             externalId: jsonArr[i].externalId,
-            title: jsonArr[i].title,
+            address: jsonArr[i].title,
+            postalCode: jsonArr[i].postalCode,
             city: jsonArr[i].city,
             areaSqm: jsonArr[i].areaSqm,
-            address: jsonArr[i].address,
             rent: jsonArr[i].rent,
             deposit: jsonArr[i].deposit,
             isRoomActive: jsonArr[i].isRoomActive,
