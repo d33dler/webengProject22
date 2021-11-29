@@ -58,11 +58,11 @@ exports.id_update = (req, res) => {
         }
     }).then(num => {
         if (num == 1) {
-            res.send({
+            res.status(200).send({
                 message: "Article was updated successfully."
             });
         } else {
-            res.send({
+            res.status(404).send({
                 message: `Cannot update property with id=${id}.Property not found or input is empty!`
             });
         }
@@ -83,17 +83,17 @@ exports.id_delete = (req, res) => {
         }
     }).then(num => {
         if (num == 1) {
-            res.send({
-                message: "Property was deleted successfully!"
+            res.status(200).send({
+                message: "Article was deleted successfully!"
             });
         } else {
-            res.send({
-                message: `Cannot delete Property with id=${id}. Property not found!`
+            res.status(404).send({
+                message: `Cannot delete article with id=${id}. Property not found!`
             });
         }
     }).catch(err => {
         res.status(500).send({
-            message: "ERROR: Could not delete Property with id=" + id
+            message: "An error occurred while deleting article with id=" + id
         });
     });
 };
@@ -111,7 +111,7 @@ exports.lat_long_find = (req, res) => {
                 ]
         }
     }).then(data => {
-        if(data.length === 0){
+        if (data.length === 0) {
             res.send({message: "0 Properties found at the provided location"})
         } else res.send(data);
     }).catch(err => {
@@ -133,11 +133,11 @@ exports.lat_long_update = (req, res) => {
         }
     }).then(num => {
         res.send({
-            message: `Updated ${num} properties with lat=${lat} & long= ${long}`
+            message: `Updated ${num} articles with lat=${lat} & long= ${long}`
         });
     }).catch(() => {
         res.status(500).send({
-            message: "Error updating properties"
+            message: "Encountered an error while updating articles by location"
         });
     });
 }
@@ -152,12 +152,15 @@ exports.lat_long_delete = (req, res) => {
             longitude: long
         }
     }).then(num => {
-        res.send({
-            message: `Deleted ${num} properties with lat=${lat} & long= ${long}.`
-        });
+        if (num !== 0){
+            res.status(200).set({
+                message: `Deleted ${num} articles with lat=${lat} & long= ${long}.`
+            });
+        } else res.status(404).send({message: `Could not find any articles to delete`})
+
     }).catch(err => {
         res.status(500).send({
-            message: `Could not delete Property with with lat=${lat} & long= ${long}`
+            message: `Could not delete Property with lat=${lat} & long= ${long}`
         });
     });
 }
@@ -177,7 +180,7 @@ exports.active_budget_find = (req, res) => {
         },
         raw: true
     }).then(data => {
-        if(data.length !== 0){
+        if (data.length !== 0) {
             if (format === 'csv') {
                 console.log(data);
                 converter.json2csv(data, (err, csv) => {
@@ -193,7 +196,7 @@ exports.active_budget_find = (req, res) => {
             } else {
                 res.status(200).send(data);
             }
-        } else res.status(200).send({message: "0 Articles found for the specified quarry"})
+        } else res.status(404).send({message: "0 Articles found for the specified quarry"})
 
     }).catch(err => {
         res.status(500).send({
@@ -244,25 +247,31 @@ exports.statistics = (req, res) => {
 async function send_all_stats(seq, city, res) {
     const m_deposit = await calc_median(city, `deposit`)
     const m_cost = await calc_median(city, `rent`)
-    await db.Properties.findAll({
-        where: {city: {[Op.like]: `%${city}%`}},
-        attributes: [
-            [seq.fn('COUNT', seq.col('externalId')), 'entries_n'],
-            [seq.fn('AVG', seq.col('rent')), 'mean_cost'],
-            [seq.fn('STD', seq.col('rent')), 'sd_cost'],
-            [seq.fn('AVG', seq.col('deposit')), 'mean_deposit'],
-            [seq.fn('STD', seq.col('deposit')), 'sd_deposit'],
-        ]
-    }).then(r => {
-        const jsonObj = r[0].toJSON();
-        json_add_attr(jsonObj, "median_cost", m_cost);
-        json_add_attr(jsonObj, "median_deposit", m_deposit);
-        res.status(200).send(jsonObj)
-    }).catch(err => {
-        res.status(500).send({
-            message: err.message || "Failed to fetch db statistics."
+
+    if (m_deposit != null) {
+        await db.Properties.findAll({
+            where: {city: {[Op.like]: `%${city}%`}},
+            attributes: [
+                [seq.fn('COUNT', seq.col('externalId')), 'entries_n'],
+                [seq.fn('AVG', seq.col('rent')), 'mean_cost'],
+                [seq.fn('STD', seq.col('rent')), 'sd_cost'],
+                [seq.fn('AVG', seq.col('deposit')), 'mean_deposit'],
+                [seq.fn('STD', seq.col('deposit')), 'sd_deposit'],
+            ]
+        }).then(r => {
+            const jsonObj = r[0].toJSON();
+            json_add_attr(jsonObj, "median_cost", m_cost);
+            json_add_attr(jsonObj, "median_deposit", m_deposit);
+            json_add_attr(jsonObj, "city", city.length === 0 ? "*" : city)
+            res.status(200).send(jsonObj)
+        }).catch(err => {
+            res.status(500).send({
+                message: err.message || "Failed to fetch database statistics."
+            });
         });
-    });
+    } else {
+        res.status(404).send({message: "The quarried city name was not found in the database"});
+    }
 }
 
 async function calc_median(city, param) {
@@ -270,22 +279,27 @@ async function calc_median(city, param) {
     await db.Properties.count({
         where: {city: {[Op.like]: `%${city}%`}}
     }).then(async mid => {
-        const mid2 = Math.trunc(mid / 2) - 1;
-        mid = mid % 2 === 0 ? mid / 2 : Math.trunc(mid / 2) + 1;
-        await db.Properties.findAll({
-            where: {city: {[Op.like]: `%${city}%`}},
-            order: [[param, 'ASC']],
-            offset: mid2,
-            limit: mid - mid2,
-            attributes: [param]
-        }).then(median_res => {
-            console.error(median_res)
-            let x = 0;
-            for (let i = 0; i < median_res.length; i++) {
-                x += median_res[i][`${param}`];
-            }
-            res = x / median_res.length;
-        })
+        if (mid !== 0) {
+            const mid2 = Math.trunc(mid / 2) - 1;
+            mid = mid % 2 === 0 ? mid / 2 : Math.trunc(mid / 2) + 1;
+            await db.Properties.findAll({
+                where: {city: {[Op.like]: `%${city}%`}},
+                order: [[param, 'ASC']],
+                offset: mid2,
+                limit: mid - mid2,
+                attributes: [param]
+            }).then(median_res => {
+                console.error(median_res)
+                let x = 0;
+                for (let i = 0; i < median_res.length; i++) {
+                    x += median_res[i][`${param}`];
+                }
+                res = x / median_res.length;
+
+            })
+        } else {
+            return null;
+        }
     });
     console.log(res);
     return res;
