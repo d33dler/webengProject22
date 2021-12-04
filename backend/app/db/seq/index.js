@@ -31,7 +31,7 @@ async function initialize() {
 }
 
 function collectDataset() {
-    fs.readFile('properties.json', 'utf8', (err, jsonString) => {
+    fs.readFile("properties.json", 'utf8', (err, jsonString) => {
         if (err) {
             console.log("File read failed:", err)
             return
