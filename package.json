@@ -1,6 +1,7 @@
 {
-  "devDependencies": {
-    "eslint": "^8.4.0",
-    "eslint-plugin-react": "^7.27.1"
-  }
+	"scripts": {
+		"backend": "cd backend && npm run server",
+		"frontend": "cd frontend && npm start",
+		"dev": "concurrently \"npm run backend\" \"npm run frontend\""
+	}
 }
