@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "server": "nodemon --delay 500ms server.js",
-    "frontend": "cd frontend/react-crud && npm start",
+    "frontend": "cd ../frontend && npm start",
     "dev": "concurrently \"npm run server\" \"npm run frontend\""
   },
   "keywords": [

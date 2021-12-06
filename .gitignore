@@ -4,10 +4,10 @@
 .idea/
 
 # The dataset
-properties.json
+backend/properties.json
 
 # Lock files
-package-lock.json
+backend/package-lock.json
 
 # Logs
 logs

@@ -19,7 +19,7 @@ app.use(express.urlencoded({ extended: true }));
 app.get("/", (req, res) => {
     res.json({ message: "TestDriving server GR23" });
 });
-require("./backend/routes/kamernet.routes")(app);
+require("./routes/kamernet.routes")(app);
 
 // set port, listen for requests
 const PORT = process.env.PORT || 8080;
