@@ -1,6 +1,7 @@
-import React, {Component, createRef} from 'react';
+import React, {Component} from 'react';
 import ArticleService from '../services/article.service';
 import {fieldSet} from './fields_create';
+
 
 export default class PostArticle extends Component {
     constructor(props) {
@@ -11,30 +12,31 @@ export default class PostArticle extends Component {
         this.renderField = this.renderField.bind(this);
         this.renderField = this.renderField.bind(this);
         this.handleChange = this.handleChange.bind(this);
-        let state = {submitted: false};
-        for (let i = 0; i < fieldSet.length; i++) {
-            state[`${fieldSet[i].id}`] = '';
-        }
-        this.state = state;
+        this.continue = this.continue.bind(this);
+        this.state = this.newArticle();
     }
 
     uploadArticle() {
         ArticleService.create(this.state)
             .then((response) => {
-                this.setState({submitted: response.data.submitted});
                 console.log(response.data);
+                this.setState({submitted: true});
             })
             .catch((el) => {
                 console.log(el);
             });
     }
 
-    async newArticle() {
+    /**
+     *
+     * @returns {{submitted: boolean}}
+     */
+    newArticle() {
         let state = {submitted: false};
         for (let i = 0; i < fieldSet.length; i++) {
             state[`${fieldSet[i].id}`] = '';
         }
-        this.setState(state);
+        return state;
     }
 
     // eslint-disable-next-line class-methods-use-this
@@ -64,14 +66,12 @@ export default class PostArticle extends Component {
                                        value={o}
                                        onChange={(event => this.handleChange(tok, event))}
                                        checked={this.state[`${tok}`] === o}/>
-                            <label htmlFor={`${tok}_${o}`}>{o}</label>
+                                <label htmlFor={`${tok}_${o}`}>{o}</label>
                             </div>
                         ))}
                     </ul>
                 </div>
             </>
-
-
         )
     }
 
@@ -83,17 +83,21 @@ export default class PostArticle extends Component {
         this.setState({[`${value}`]: event.target.value});
     }
 
+    continue() {
+        const state = this.newArticle();
+        this.setState({...state});
+    }
+
     render() {
-        const {submitted} = this.state;
         return (
             <div className="submit-form">
-                {submitted ? (
+                {this.state.submitted ? (
                     <div>
                         <h4>Article was uploaded into the database!</h4>
                         <button
                             className="btn btn-success"
-                            onClick={this.newArticle}>
-                            Upload
+                            onClick={this.continue}>
+                            Continue
                         </button>
                     </div>
                 ) : (
@@ -108,8 +112,7 @@ export default class PostArticle extends Component {
                                 case 'text':
                                     return (this.renderField(stateField, id, name));
                                 case 'radio':
-                                    return (
-                                        this.renderRadio(stateField, id, name, options));
+                                    return (this.renderRadio(stateField, id, name, options));
                                 default:
                                     return null;
                             }
