@@ -23,9 +23,11 @@ export default class PostArticle extends Component {
     }
 
     newArticle() {
+        let state = {}
         for (let i = 0; i < fields.length; i++) {
-            this.state[`${fields[i].id}`] = ''
+            state[`${fields[i].id}`] = ''
         }
+        this.setState(state);
     }
 
 

@@ -7,26 +7,26 @@ module.exports = app => {
     var router = require("express").Router();
 
     // Create a new property
-    router.post("/new", nrp_control.create);
+    router.post("articles/new", nrp_control.create);
 
 
     // Retrieve a single Tutorial with id
-    router.get("/id/:id", nrp_control.id_find);
-    router.put("/id/:id", nrp_control.id_update);
-    router.delete("/id/:id", nrp_control.id_delete);
+    router.get("articles/id/:id", nrp_control.id_find);
+    router.put("articles/id/:id", nrp_control.id_update);
+    router.delete("articles/id/:id", nrp_control.id_delete);
 
 
-    router.get("/location", nrp_control.lat_long_find);
-    router.delete("/location", nrp_control.lat_long_delete);
-    router.put("/location", nrp_control.lat_long_update);
+    router.get("articles/location", nrp_control.lat_long_find);
+    router.delete("articles/location", nrp_control.lat_long_delete);
+    router.put("articles/location", nrp_control.lat_long_update);
 
-    router.get("/search-budget", nrp_control.active_budget_find);
-
-
-    router.get("/top-list/:city?", nrp_control.active_top_list)
+    router.get("articles/search-budget", nrp_control.active_budget_find);
 
 
-    router.get("/statistics/:city?", nrp_control.statistics);
+    router.get("articles/top-list/:city?", nrp_control.active_top_list)
 
-    app.use('/api/nrp', router);
+
+    router.get("articles/statistics/:city?", nrp_control.statistics);
+
+    app.use('/nrp', router);
 };

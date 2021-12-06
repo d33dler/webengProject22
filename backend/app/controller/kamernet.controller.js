@@ -132,9 +132,15 @@ exports.lat_long_update = (req, res) => {
             longitude: long
         }
     }).then(num => {
-        res.send({
-            message: `Updated ${num} articles with lat=${lat} & long= ${long}`
-        });
+        if (num === 0) {
+            res.status(404).send({
+                message: "Found 0 articles to update"
+            })
+        } else {
+            res.status(200).send({
+                message: `Updated ${num} articles with lat=${lat} & long= ${long}`
+            });
+        }
     }).catch(() => {
         res.status(500).send({
             message: "Encountered an error while updating articles by location"
@@ -152,7 +158,7 @@ exports.lat_long_delete = (req, res) => {
             longitude: long
         }
     }).then(num => {
-        if (num !== 0){
+        if (num !== 0) {
             res.status(200).set({
                 message: `Deleted ${num} articles with lat=${lat} & long= ${long}.`
             });
@@ -196,7 +202,7 @@ exports.active_budget_find = (req, res) => {
             } else {
                 res.status(200).send(data);
             }
-        } else res.status(404).send({message: "0 Articles found for the specified quarry"})
+        } else res.status(204).send({message: "0 Articles found for the specified quarry"})
 
     }).catch(err => {
         res.status(500).send({
@@ -241,7 +247,8 @@ exports.statistics = (req, res) => {
     city = req.params.city;
     city = city ? city : ''
     const seq = db.Sequelize;
-    send_all_stats(seq, city, res)
+    send_all_stats(seq, city, res).then(() => {
+    })
 }
 
 async function send_all_stats(seq, city, res) {
@@ -270,7 +277,7 @@ async function send_all_stats(seq, city, res) {
             });
         });
     } else {
-        res.status(404).send({message: "The quarried city name was not found in the database"});
+        res.status(204).send({message: "The quarried city name was not found in the database"});
     }
 }
 

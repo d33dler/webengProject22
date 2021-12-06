@@ -5,32 +5,23 @@ class ArticleService {
 
 
     getById(id) {
-        return axios.get(`/articles`, {
-            params: {
-                id: `${id}`
-            }
-        });
+        return axios.get(`articles/id/${id}`);
     }
 
     create(data) {
-        return axios.post("/articles", data); //test this ?
+        return axios.post("articles/new", data); //test this ?
     }
 
     updateById(id, data) {
-        return axios.put(`/articles/${id}`, data);
+        return axios.put(`articles/id/${id}`, data);
     }
 
     deleteById(id) {
-        return axios.delete(`/articles/`, {
-                params: {
-                    externalId: `${id}`,
-                }
-            }
-        );
+        return axios.delete(`articles/id/${id}`);
     }
 
     deleteByLocation(lat, long) {
-        return axios.delete(`/articles/`, {
+        return axios.delete(`articles/location`, {
                 params: {
                     lat: `${lat}`,
                     long: `${long}`
@@ -41,11 +32,11 @@ class ArticleService {
 
 
     deleteAll() {
-        return axios.delete(`/articles`);
+        return axios.delete(`articles`);
     }
 
     findByParameter(allArgs) {
-        return axios.get(`/top-list/`,
+        return axios.get(`articles/top-list/`,
             {
                 params: _.pick(allArgs, (value, key) => { return !!value; }) //test this
                 //probably needs headers
@@ -53,7 +44,7 @@ class ArticleService {
     }
 
     findByRent(min, max, format) {
-        return axios.get(`/search-budget?`,
+        return axios.get(`articles/search-budget`,
             {
                 params: {
                     min: `${min}`,
@@ -64,7 +55,7 @@ class ArticleService {
     }
 
     findByLocation(lat, long, format) {
-        return axios.get(`/location?`,
+        return axios.get(`articles/location?`,
             {
                 params: {
                     lat: `${lat}`,
