@@ -31,8 +31,15 @@ exports.id_find = (req, res) => {
   const { id } = req.params;
   const condition = id ? { externalId: { [Op.like]: `${id}` } } : null;
 
-  db.Properties.findOne({ where: condition }).then((data) => { // add not found
-    res.send(data);
+  db.Properties.findOne({ where: condition }).then((data) => {
+    if (data != null) {
+      res.send(data.getValues());
+    } else {
+      res.status(204).send({
+        message:
+          'No article found.',
+      });
+    }
   }).catch((err) => {
     res.status(500).send({
       message:
@@ -54,7 +61,7 @@ exports.id_update = (req, res) => {
         message: 'Article was updated successfully.',
       });
     } else {
-      res.status(404).send({
+      res.status(204).send({
         message: `Cannot update property with id=${id}.Property not found or input is empty!`,
       });
     }
@@ -79,7 +86,7 @@ exports.id_delete = (req, res) => {
         message: 'Article was deleted successfully!',
       });
     } else {
-      res.status(404).send({
+      res.status(204).send({
         message: `Cannot delete article with id=${id}. Property not found!`,
       });
     }
@@ -125,7 +132,7 @@ exports.lat_long_update = (req, res) => {
     },
   }).then((num) => {
     if (num === 0) {
-      res.status(404).send({
+      res.status(204).send({
         message: 'Found 0 articles to update',
       });
     } else {

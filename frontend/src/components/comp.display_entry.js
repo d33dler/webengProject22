@@ -18,8 +18,8 @@ export default class DisplayEntry extends Component {
             <ul>
                 {Object.entries(this.props.data).map(([k, v]) =>
                     <li>
-                        {this.generateLabel("field", k+` :`, "blue")}
-                        {this.generateLabel("value", v, "green")}
+                        {this.generateLabel("field", k+` :`, "blue", "bold")}
+                        {this.generateLabel("value", v, "green", "normal")}
                     </li>
                 )}
             </ul>
