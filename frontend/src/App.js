@@ -8,6 +8,7 @@ import Article from "./components/comp.article";
 import ArticleList from "./components/comp.entry_list"
 import EntryStatistics from "./components/comp.entry_list"
 
+//Main App
 class App extends Component {
     render() {
         return (
