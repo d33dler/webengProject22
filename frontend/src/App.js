@@ -19,8 +19,8 @@ class App extends Component {
                    </Link>
                     <div className="navbar-nav mr-auto">
                         <li className="nav-item">
-                            <Link to={"nrp/articles/search/id"} className="nav-link">
-                                Search entry
+                            <Link to={"nrp/articles/search"} className="nav-link">
+                                Search
                             </Link>
                         </li>
                         <li className="nav-item">
@@ -41,7 +41,6 @@ class App extends Component {
                         <Route exact path="nrp" element={App}/>
                         <Route exact path={"nrp/articles/search"} element={<ArticleList/>} />
                         <Route exact path={"nrp/articles/create"} element={<AddEntry/>} />
-                        <Route path={"nrp/articles/search/id/:id"} element={<Article/>} />
                         <Route path={"nrp/articles/stats/:city"} element={<EntryStatistics/>} />
                     </Routes>
                 </div>

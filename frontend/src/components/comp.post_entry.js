@@ -20,10 +20,7 @@ export default class PostArticle extends Component {
             });
     }
 
-    /**
-     *
-     * @returns {{submitted: boolean}}
-     */
+
     newArticle = () => {
         let state = {submitted: false};
         for (let i = 0; i < fieldSet.length; i++) {

@@ -6,9 +6,9 @@ export default class DisplayEntry extends Component {
         super(props);
     }
 
-    generateLabel = (clazz, field, color) => {
+    generateLabel = (clazz, field, color, font) => {
         return (<div className={clazz}>
-                <label style={{color: color}} htmlFor={field}>{`${field}`}</label>
+                <label style={{color: color, fontWeight: font }} htmlFor={field}>{`${field}`}</label>
             </div>
         )
     }
