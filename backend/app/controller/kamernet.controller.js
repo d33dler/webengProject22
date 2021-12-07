@@ -3,7 +3,7 @@ const { response } = require('express');
 const medianAverage = require('median-average');
 const converter = require('json-2-csv');
 const db = require('../db/seq');
-
+require('sequelize-values')(Sequelize);
 // Create and upload a new property
 exports.create = (req, res) => {
   const rentProp = {
@@ -15,15 +15,13 @@ exports.create = (req, res) => {
     areaSqm: req.body.areaSqm,
     isRoomActive: req.body.isRoomActive === 'Yes',
   };
-  // Upload new property in the database
+    // Upload new property in the database
   db.Properties.create(rentProp)
-    .then((data) => {
-      res.send(data);
-    })
+    .then((data) => res.status(200).send(data.getValues()))
     .catch((err) => {
       res.status(500).send({
         message:
-                    err.message || 'Some error occurred while creating new rental post',
+                err.message || 'Some error occurred while creating new rental post',
       });
     });
 };
@@ -243,6 +241,10 @@ exports.statistics = (req, res) => {
   });
 };
 
+function json_add_attr(obj, field, value) {
+  obj[field] = value;
+}
+
 async function send_all_stats(seq, city, res) {
   const m_deposit = await calc_median(city, 'deposit');
   const m_cost = await calc_median(city, 'rent');
@@ -301,8 +303,4 @@ async function calc_median(city, param) {
   });
   console.log(res);
   return res;
-}
-
-function json_add_attr(obj, field, value) {
-  obj[field] = value;
 }

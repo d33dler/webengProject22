@@ -5,11 +5,27 @@
 }
 
 .submit-form {
-    max-width: 300px;
+    max-width: 400px;
     margin: auto;
 }
 
 .edit-form {
-    max-width: 300px;
+    max-width: 400px;
     margin: auto;
+}
+
+.display-entry {
+    min-width: 400px;
+    max-width: 500px;
+    margin: auto;
+    background-color: bisque;
+}
+
+.value {
+    max-width: 600px;
+    font-style: italic;
+}
+
+.field {
+
 }

@@ -1,26 +1,19 @@
 import React, {Component} from 'react';
 import ArticleService from '../services/article.service';
 import {fieldSet} from './fields_create';
-
+import DisplayEntry from "./comp.display_entry";
 
 export default class PostArticle extends Component {
     constructor(props) {
         super(props);
-        this.uploadArticle = this.uploadArticle.bind(this);
-        this.newArticle = this.newArticle.bind(this);
-        this.renderRadio = this.renderRadio.bind(this);
-        this.renderField = this.renderField.bind(this);
-        this.renderField = this.renderField.bind(this);
-        this.handleChange = this.handleChange.bind(this);
-        this.continue = this.continue.bind(this);
         this.state = this.newArticle();
     }
 
-    uploadArticle() {
+    uploadArticle = () => {
         ArticleService.create(this.state)
             .then((response) => {
                 console.log(response.data);
-                this.setState({submitted: true});
+                this.setState({submitted: true, data: response.data});
             })
             .catch((el) => {
                 console.log(el);
@@ -31,7 +24,7 @@ export default class PostArticle extends Component {
      *
      * @returns {{submitted: boolean}}
      */
-    newArticle() {
+    newArticle = () => {
         let state = {submitted: false};
         for (let i = 0; i < fieldSet.length; i++) {
             state[`${fieldSet[i].id}`] = '';
@@ -39,11 +32,10 @@ export default class PostArticle extends Component {
         return state;
     }
 
-    // eslint-disable-next-line class-methods-use-this
-    renderField(arg, tok, fieldName) {
+    renderField = (arg, tok, fieldName) => {
         return (
             <div className="form-group">
-                <label style={{marginRight: '20px'}} id={fieldName} htmlFor={tok}>{fieldName}</label>
+                <label style={{marginRight: '150px'}} id={fieldName} htmlFor={tok}>{fieldName}</label>
                 <input type="text"
                        id={tok}
                        onChange={(event => this.handleChange(tok, event))}
@@ -52,8 +44,7 @@ export default class PostArticle extends Component {
         );
     }
 
-    // eslint-disable-next-line class-methods-use-this
-    renderRadio(arg, tok, fieldName, options) {
+    renderRadio = (arg, tok, fieldName, options) => {
         return (
             <>
                 <div>
@@ -75,15 +66,15 @@ export default class PostArticle extends Component {
         )
     }
 
-    createLabel(fieldName, tok) {
+    createLabel = (fieldName, tok) => {
         return (<label id={fieldName} htmlFor={tok}>{fieldName}</label>)
     }
 
-    handleChange(value, event) {
+    handleChange = (value, event) => {
         this.setState({[`${value}`]: event.target.value});
     }
 
-    continue() {
+    continue = () => {
         const state = this.newArticle();
         this.setState({...state});
     }
@@ -93,7 +84,8 @@ export default class PostArticle extends Component {
             <div className="submit-form">
                 {this.state.submitted ? (
                     <div>
-                        <h4>Article was uploaded into the database!</h4>
+                        <h5>Article was uploaded into the database!</h5>
+                        <DisplayEntry data = {this.state.data} />
                         <button
                             className="btn btn-success"
                             onClick={this.continue}>
