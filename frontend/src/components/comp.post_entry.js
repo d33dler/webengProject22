@@ -2,11 +2,13 @@ import React, {Component} from 'react';
 import ArticleService from '../services/article.service';
 import {fieldSet} from './fields_create';
 import DisplayEntry from "./comp.display_entry";
+import {renderField, renderRadio, newState, handleChange} from "./helper_fun";
+import {textFieldParams, checkboxParams} from "./params_field_types";
 
 export default class PostArticle extends Component {
     constructor(props) {
         super(props);
-        this.state = this.newArticle();
+        this.state = newState(fieldSet);
     }
 
     uploadArticle = () => {
@@ -21,58 +23,8 @@ export default class PostArticle extends Component {
     }
 
 
-    newArticle = () => {
-        let state = {submitted: false};
-        for (let i = 0; i < fieldSet.length; i++) {
-            state[`${fieldSet[i].id}`] = '';
-        }
-        return state;
-    }
-
-    renderField = (arg, tok, fieldName) => {
-        return (
-            <div className="form-group">
-                <label style={{marginRight: '150px'}} id={fieldName} htmlFor={tok}>{fieldName}</label>
-                <input type="text"
-                       id={tok}
-                       onChange={(event => this.handleChange(tok, event))}
-                       ref={(el) => arg = el}/>
-            </div>
-        );
-    }
-
-    renderRadio = (arg, tok, fieldName, options) => {
-        return (
-            <>
-                <div>
-                    <ul>
-                        {this.createLabel(fieldName, tok)}
-                        {options.map((o, ix) => (
-                            <div className="form-group">
-                                <input type="radio"
-                                       id={`${tok}_${o}`}
-                                       value={o}
-                                       onChange={(event => this.handleChange(tok, event))}
-                                       checked={this.state[`${tok}`] === o}/>
-                                <label htmlFor={`${tok}_${o}`}>{o}</label>
-                            </div>
-                        ))}
-                    </ul>
-                </div>
-            </>
-        )
-    }
-
-    createLabel = (fieldName, tok) => {
-        return (<label id={fieldName} htmlFor={tok}>{fieldName}</label>)
-    }
-
-    handleChange = (value, event) => {
-        this.setState({[`${value}`]: event.target.value});
-    }
-
     continue = () => {
-        const state = this.newArticle();
+        const state = newState(fieldSet);
         this.setState({...state});
     }
 
@@ -96,12 +48,12 @@ export default class PostArticle extends Component {
                                 name, id, type, options
                             } = field;
                             const {[id]: stateField} = this.state;
-
                             switch (type) {
                                 case 'text':
-                                    return (this.renderField(stateField, id, name));
+                                    return (renderField(this, textFieldParams,stateField, id, name,
+                                        (event => handleChange(this, id, event))));
                                 case 'radio':
-                                    return (this.renderRadio(stateField, id, name, options));
+                                    return (renderRadio(this, stateField, id, name, options));
                                 default:
                                     return null;
                             }

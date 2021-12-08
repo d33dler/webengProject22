@@ -1,6 +1,7 @@
 const property = require('../app/controller/kamernet.controller');
 
 require('../app/controller/kamernet.controller');
+const nrp_control = require("../app/controller/kamernet.controller");
 
 module.exports = (app) => {
   const nrp_control = require('../app/controller/kamernet.controller');
@@ -12,6 +13,8 @@ module.exports = (app) => {
 
   // Retrieve a single Tutorial with id
   router.get('/id/:id', nrp_control.id_find);
+  router.get('/:city?', nrp_control.city_find);
+  router.get('/:param?', nrp_control.param_find);
   router.put('/id/:id', nrp_control.id_update);
   router.delete('/id/:id', nrp_control.id_delete);
 

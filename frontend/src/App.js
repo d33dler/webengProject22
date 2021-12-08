@@ -2,12 +2,10 @@ import React, { Component } from "react";
 import {Routes, Route, Link} from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./App.css";
-
 import AddEntry from "./components/comp.post_entry";
-import Article from "./components/comp.article";
 import ArticleList from "./components/comp.entry_list"
-import EntryStatistics from "./components/comp.entry_list"
-
+import SelectCity from "./components/comp.req_stats"
+import Statistics from "./components/comp.stats"
 //Main App
 class App extends Component {
     render() {
@@ -41,7 +39,8 @@ class App extends Component {
                         <Route exact path="nrp" element={App}/>
                         <Route exact path={"nrp/articles/search"} element={<ArticleList/>} />
                         <Route exact path={"nrp/articles/create"} element={<AddEntry/>} />
-                        <Route path={"nrp/articles/stats/:city"} element={<EntryStatistics/>} />
+                        <Route path={"nrp/articles/stats/:city"} element={<Statistics />} />
+                        <Route path={"nrp/articles/stats"} element={<SelectCity/>} />
                     </Routes>
                 </div>
             </div>

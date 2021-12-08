@@ -4,7 +4,7 @@ const { DataTypes } = require('sequelize');
 const e = require('express');
 
 module.exports = (sequelize, Sequelize) => {
-  const Properties = sequelize.define('properties', {
+  return sequelize.define('properties', {
     externalId: {
       type: DataTypes.UUID,
       allowNull: false,
@@ -59,6 +59,4 @@ module.exports = (sequelize, Sequelize) => {
       type: DataTypes.STRING,
     },
   });
-
-  return Properties;
 };

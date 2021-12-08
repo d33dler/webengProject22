@@ -43,7 +43,6 @@ export default class SearchArticle extends Component {
 
     refreshList = () => {
         this.setState({
-
             currentEntry: null,
             currentIndex: -1
         });
@@ -64,7 +63,6 @@ export default class SearchArticle extends Component {
 
     }
 
-    varStr = v => Object.keys(v)[0]
 
     renderInput = (clazz, value, ph) => {
         return (<input
@@ -83,7 +81,7 @@ export default class SearchArticle extends Component {
                     <div className="md-form md-outline my-0">
                         {this.renderInput("form-control sm-0",value+".min",'min')}
                     </div>
-                    <p className="px-1 mb-xxl-1 text-muted"> - </p>
+                    <p className="px-1 mb-lg-2 text-muted"> - </p>
                     <div className="md-form md-outline my-0">
                         {this.renderInput("form-control sm-0",value+".max",'max')}
 
@@ -124,9 +122,8 @@ export default class SearchArticle extends Component {
                 </div>
                 <div className="col-md-6">
                     <h4>Article List</h4>
-
                     <ul className="list-group">
-                        {entries &&
+                        {entries.length>0 &&
                         entries.map((entry, index) => (
                             <li
                                 className={
@@ -144,7 +141,7 @@ export default class SearchArticle extends Component {
                 <div className="col-md-6">
                     {currentEntry && this.state.entries ? (
                         <div className={"col-md-8"}>
-                            <DisplayEntry data={this.state.entries[currentIndex]}/>
+                            <DisplayEntry data={currentEntry}/>
                         </div>
                     ) : (
                         <div>

@@ -5,7 +5,13 @@ class ArticleService {
   getById(id) {
     return axios.get(`articles/id/${id}`);
   }
-
+  getByParam(param,value) {
+    return axios.get(`articles/${param}`, {
+      params: {
+        value: value
+      }
+    });
+  }
   create(data) {
     return axios.post('articles/new', data); // test this ?
   }
@@ -66,6 +72,10 @@ class ArticleService {
       },
     );
   }
+  getStatistics(city,body){
+    return axios.get(`articles/statistics/${city}`, body)}
+
 }
+
 
 export default new ArticleService();

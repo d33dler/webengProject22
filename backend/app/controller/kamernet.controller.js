@@ -22,9 +22,29 @@ exports.create = (req, res) => {
     .catch((err) => {
       res.status(500).send({
         message:
-                err.message || 'Some error occurred while creating new rental post',
+                    err.message || 'Some error occurred while creating new rental post',
       });
     });
+};
+
+exports.city_find = (req, res) => {
+  const { value } = req.query;
+  const condition = value ? { city: { [Op.like]: `${value}%` } } : null;
+  db.Cities.findAll({ where: condition }).then((data) => {
+    if (data.length > 0) {
+      res.status(200).send(data);
+    } else res.status(204).send(data);
+  });
+};
+exports.param_find = (req, res) => {
+  const { param } = req.params;
+  const { value } = req.query;
+  const condition = value ? { [`${param}`]: { [Op.like]: value } } : null;
+  db.Properties.findAll({ where: condition }).then((data) => {
+    if (data.length > 0) {
+      res.status(200).send(data);
+    } else res.status(204).send(data);
+  });
 };
 
 // Find a single Tutorial with an id
@@ -38,7 +58,7 @@ exports.id_find = (req, res) => {
     } else {
       res.status(204).send({
         message:
-          'No article found.',
+                    'No article found.',
       });
     }
   }).catch((err) => {
@@ -220,7 +240,7 @@ function activeFindByParam(param, req, res) {
   const { ascending } = req.query;
   const n = req.query.amount;
   const asc = (ascending === 'true') ? 'ASC' : 'DESC';
-  const seq = db.sequelize;
+  const seq = db.sequelizeProperties;
   db.Properties.findAll({
     limit: parseInt(n),
     where: {
@@ -240,12 +260,18 @@ function activeFindByParam(param, req, res) {
   });
 }
 
-exports.statistics = (req, res) => {
-  let city;
-  city = req.params.city;
+exports.statistics = async (req, res) => {
+  let { city } = req.params;
   city = city || '';
   const seq = db.Sequelize;
-  send_all_stats(seq, city, res).then(() => {
+  await get_stats(seq, city, res).then((stats) => {
+    if (stats.status === 200) {
+      res.status(200).send(stats);
+    } else if (stats.status === 204) {
+      res.status(204).send();
+    } else {
+      res.status(500).send({ message: stats.error.message || 'The quarried city name was not found in the database' });
+    }
   });
 };
 
@@ -253,7 +279,7 @@ function json_add_attr(obj, field, value) {
   obj[field] = value;
 }
 
-async function send_all_stats(seq, city, res) {
+async function get_stats(seq, city, res) {
   const m_deposit = await calc_median(city, 'deposit');
   const m_cost = await calc_median(city, 'rent');
 
@@ -261,26 +287,20 @@ async function send_all_stats(seq, city, res) {
     await db.Properties.findAll({
       where: { city: { [Op.like]: `%${city}%` } },
       attributes: [
-        [seq.fn('COUNT', seq.col('externalId')), 'entries_n'],
-        [seq.fn('AVG', seq.col('rent')), 'mean_cost'],
-        [seq.fn('STD', seq.col('rent')), 'sd_cost'],
-        [seq.fn('AVG', seq.col('deposit')), 'mean_deposit'],
-        [seq.fn('STD', seq.col('deposit')), 'sd_deposit'],
+        [seq.fn('COUNT', seq.col('externalId')), 'Entries'],
+        [seq.fn('AVG', seq.col('rent')), 'Mean cost'],
+        [seq.fn('STD', seq.col('rent')), 'SD cost'],
+        [seq.fn('AVG', seq.col('deposit')), 'Mean deposit'],
+        [seq.fn('STD', seq.col('deposit')), 'SD deposit'],
       ],
     }).then((r) => {
       const jsonObj = r[0].toJSON();
-      json_add_attr(jsonObj, 'median_cost', m_cost);
-      json_add_attr(jsonObj, 'median_deposit', m_deposit);
-      json_add_attr(jsonObj, 'city', city.length === 0 ? '*' : city);
-      res.status(200).send(jsonObj);
-    }).catch((err) => {
-      res.status(500).send({
-        message: err.message || 'Failed to fetch database statistics.',
-      });
-    });
-  } else {
-    res.status(204).send({ message: 'The quarried city name was not found in the database' });
-  }
+      json_add_attr(jsonObj, 'Median cost', m_cost);
+      json_add_attr(jsonObj, 'Median deposit', m_deposit);
+      json_add_attr(jsonObj, 'City', city.length === 0 ? '*' : city);
+      return { status: 200, res: jsonObj };
+    }).catch((err) => ({ status: 500, error: err }));
+  } else return { status: 204 };
 }
 
 async function calc_median(city, param) {

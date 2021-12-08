@@ -6,33 +6,39 @@ const fs = require('fs');
 const db = {};
 const ProgressBar = require('progress');
 
+const db_parameters = {
+  host: process.env.PSQL_HOST || dbConfig.host,
+  dialect: dbConfig.dialect,
+  pool: {
+    max: dbConfig.pool.max,
+    min: dbConfig.pool.min,
+    acquire: dbConfig.pool.acquire,
+    idle: dbConfig.pool.idle,
+  },
+};
+
 initialize();
 
 async function initialize() {
   const {
-    host, port, user, password, database,
+    host, port, user, password, kamernetDb, citiesDb,
   } = dbConfig;
   const connection = await mysql.createConnection({
     host, port, user, password,
   });
-  await connection.query(`CREATE DATABASE IF NOT EXISTS \`${database}\`;`);
-  const sequelize = new Sequelize(dbConfig.database, dbConfig.user, dbConfig.password, {
-    host: process.env.PSQL_HOST || dbConfig.host,
-    dialect: dbConfig.dialect,
-    pool: {
-      max: dbConfig.pool.max,
-      min: dbConfig.pool.min,
-      acquire: dbConfig.pool.acquire,
-      idle: dbConfig.pool.idle,
-    },
-  });
-
+  await connection.query(`CREATE DATABASE IF NOT EXISTS \`${kamernetDb}\`;`);
+  await connection.query(`CREATE DATABASE IF NOT EXISTS \`${citiesDb}\`;`);
+  // eslint-disable-next-line camelcase
+  const seqPropertiesDb = new Sequelize(dbConfig.kamernetDb, dbConfig.user, dbConfig.password, db_parameters);
+  const seqCitiesDb = new Sequelize(dbConfig.citiesDb, dbConfig.user, dbConfig.password, db_parameters);
   db.Sequelize = Sequelize;
-  db.sequelize = sequelize;
-  db.Properties = require('./kamernet.model.js')(sequelize, Sequelize);
-
+  db.sequelizeProperties = seqPropertiesDb;
+  db.sequelizeCities = seqCitiesDb;
+  db.Properties = require('./kamernet.model.js')(seqPropertiesDb, Sequelize);
+  db.Cities = require('./cities.model.js')(seqCitiesDb, Sequelize);
   collectDataset();
-  await sequelize.sync();
+  await seqPropertiesDb.sync();
+  await seqCitiesDb.sync();
 }
 
 function collectDataset() {
@@ -51,7 +57,8 @@ function collectDataset() {
 }
 
 async function populateDb(jsonArr) {
-  const records = [];
+  const kamernetRecords = [];
+  const cities = [];
   const bar = new ProgressBar('processing [:bar] :rate items per second :percent :etas', {
     complete: '=',
     incomplete: ' ',
@@ -59,7 +66,7 @@ async function populateDb(jsonArr) {
     total: jsonArr.length,
   });
   for (let i = 0; i < jsonArr.length; i++) {
-    records.push({
+    kamernetRecords.push({
       externalId: jsonArr[i].externalId,
       address: jsonArr[i].title,
       postalCode: jsonArr[i].postalCode,
@@ -71,13 +78,15 @@ async function populateDb(jsonArr) {
       latitude: jsonArr[i].latitude,
       longitude: jsonArr[i].longitude,
     });
+    cities.push({ city: jsonArr[i].city });
     bar.tick();
   }
   console.log('\n');
-  db.sequelize.options.logging = false;
-  await db.Properties.bulkCreate(records, { ignoreDuplicates: true });
-  db.sequelize.options.logging = console.log;
-
+  db.sequelizeProperties.options.logging = false;
+  db.sequelizeCities.options.logging = false;
+  await db.Properties.bulkCreate(kamernetRecords, { ignoreDuplicates: true });
+  await db.Cities.bulkCreate(cities, { ignoreDuplicates: true });
+  db.sequelizeProperties.options.logging = console.log;
   console.log('Finished loading database!');
 }
 
