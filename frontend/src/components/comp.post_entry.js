@@ -82,7 +82,7 @@ export default class PostArticle extends Component {
                 {this.state.submitted ? (
                     <div>
                         <h5>Article was uploaded into the database!</h5>
-                        <DisplayEntry data = {this.state.data} />
+                        <DisplayEntry data={this.state.data}/>
                         <button
                             className="btn btn-success"
                             onClick={this.continue}>

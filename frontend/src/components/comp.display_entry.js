@@ -17,7 +17,7 @@ export default class DisplayEntry extends Component {
         return <div className={"display-entry"}>
             <ul>
                 {Object.entries(this.props.data).map(([k, v]) =>
-                    <li>
+                    <li key={k}>
                         {this.generateLabel("field", k+` :`, "blue", "bold")}
                         {this.generateLabel("value", v, "green", "normal")}
                     </li>

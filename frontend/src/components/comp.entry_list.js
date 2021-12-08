@@ -2,8 +2,8 @@ import React, {Component} from "react";
 import ArticleService from '../services/article.service'
 import {Link} from "react-router-dom";
 import DisplayEntry from "./comp.display_entry";
-
-export default class PostArticle extends Component {
+const inputGrSm = "input-group input-group-sm mb-3"
+export default class SearchArticle extends Component {
     constructor(props) {
         super(props);
 
@@ -12,19 +12,24 @@ export default class PostArticle extends Component {
             currentEntry: null,
             currentIndex: -1,
             id_search: "",
-            loc_search: {
-                lat: "",
-                long: ""
-            }
+            rent: {min: 0, max: 0},
+            sqm: {min: 0, max: 0},
+            loc_search: {lat: "", long: ""}
         };
     }
 
     retrieveEntries = () => {
+        this.refreshList()
         const {id_search} = this.state;
         ArticleService.getById(id_search)
             .then(response => {
+                let data;
+                if (response.status === 204) {
+                    data = null;
+                } else data = response.data;
+
                 this.setState({
-                    entries: [response.data]
+                    entries: data
                 });
                 console.log(response.data);
             })
@@ -37,14 +42,14 @@ export default class PostArticle extends Component {
     }
 
     refreshList = () => {
-        this.retrieveEntries();
         this.setState({
+
             currentEntry: null,
             currentIndex: -1
         });
     }
 
-    setSelection(entry, index) {
+    setSelection = (entry, index) => {
         this.setState({
             currentEntry: entry,
             currentIndex: index
@@ -59,27 +64,62 @@ export default class PostArticle extends Component {
 
     }
 
+    varStr = v => Object.keys(v)[0]
+
+    renderInput = (clazz, value, ph) => {
+        return (<input
+            type="text"
+            className="form-control"
+            placeholder={ph}
+            value={this.state[`${value}`]}
+            onChange={(event) => this.handleChange(value, event)}
+        />)
+    }
+    renderRangeInput = (value, label) => {
+        return (
+            <section class="mb-lg-2">
+                <label htmlFor="to">{label} </label>
+                <div className="d-flex align-items-center mt-sm-1 pb-1">
+                    <div className="md-form md-outline my-0">
+                        {this.renderInput("form-control sm-0",value+".min",'min')}
+                    </div>
+                    <p className="px-1 mb-xxl-1 text-muted"> - </p>
+                    <div className="md-form md-outline my-0">
+                        {this.renderInput("form-control sm-0",value+".max",'max')}
+
+                    </div>
+                </div>
+            </section>
+        )
+    }
+
+
     render() {
-        const {id_search, entries, currentEntry, currentIndex} = this.state;
+
+        const {entries, currentEntry, currentIndex} = this.state;
         return (<div className="list row">
                 <div className="col-md-8">
-                    <div className="input-group mb-3">
-                        <input
-                            type="text"
-                            className="form-control"
-                            placeholder="Search by id"
-                            value={id_search}
-                            onChange={(event) => this.handleChange('id_search', event)}
-                        />
-                        <div className="input-group-append">
-                            <button
-                                className="btn btn-outline-secondary"
-                                type="button"
-                                onClick={this.retrieveEntries}
-                            >
-                                Search
-                            </button>
-                        </div>
+                    <div className={inputGrSm}>
+                        {this.renderInput("form-control", 'id_search', "ID")}
+                    </div>
+                    <label style={{marginRight: '20px'}} >Location: </label>
+                    <div className={inputGrSm}>
+                        {this.renderInput("form-control", 'loc_search.lat', "lat")}
+                        {this.renderInput("form-control", 'loc_search.long', "long")}
+                    </div>
+                    <div className={inputGrSm}>
+                        {this.renderRangeInput("rent", "Rent:")}
+                    </div>
+                    <div className={inputGrSm}>
+                        {this.renderRangeInput("sqm", "Square Area (meters):")}
+                    </div>
+                    <div className="input-group-append">
+                        <button
+                            className="btn btn-outline-secondary"
+                            type="button"
+                            onClick={this.retrieveEntries}>
+                            Search
+                        </button>
                     </div>
                 </div>
                 <div className="col-md-6">
@@ -96,17 +136,15 @@ export default class PostArticle extends Component {
                                 onClick={() => this.setSelection(entry, index)}
                                 key={index}
                             >
-                                {entry.address + ", " +entry.city}
+                                {entry.address + ", " + entry.city}
                             </li>
                         ))}
                     </ul>
-
-
                 </div>
                 <div className="col-md-6">
-                    {currentEntry ? (
+                    {currentEntry && this.state.entries ? (
                         <div className={"col-md-8"}>
-                            <DisplayEntry data={this.state.entries[0]}/>
+                            <DisplayEntry data={this.state.entries[currentIndex]}/>
                         </div>
                     ) : (
                         <div>
@@ -123,11 +161,11 @@ export default class PostArticle extends Component {
 
 /*
 
-<button
-    className="m-3 btn btn-sm btn-danger"
-    onClick={this.removeEntry}
->
-    Remove All
-</button>
+    <button
+        className="m-3 btn btn-sm btn-danger"
+        onClick={this.removeEntry}
+    >
+        Remove All
+    </button>
 
- */
+*/

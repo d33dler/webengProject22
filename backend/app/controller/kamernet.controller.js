@@ -5,6 +5,7 @@ const converter = require('json-2-csv');
 const db = require('../db/seq');
 require('sequelize-values')(Sequelize);
 // Create and upload a new property
+
 exports.create = (req, res) => {
   const rentProp = {
     address: req.body.address,
@@ -33,7 +34,7 @@ exports.id_find = (req, res) => {
 
   db.Properties.findOne({ where: condition }).then((data) => {
     if (data != null) {
-      res.send(data.getValues());
+      res.send([data.getValues()]);
     } else {
       res.status(204).send({
         message:
