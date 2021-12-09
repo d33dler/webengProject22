@@ -5,7 +5,7 @@ const seq = Sequelize;
 exports.localFunctionSet = () => {
   const arr = [];
 
-  arr['calc_median_1'] = async (db, city, param) => {
+  arr.calc_median_1 = async (db, city, param) => {
     let res = null;
     await db.Properties.count({
       where: { city: { [Op.like]: `%${city}%` } },
@@ -31,7 +31,6 @@ exports.localFunctionSet = () => {
         return null;
       }
     });
-    console.log(res);
     return res;
   };
   return arr;
@@ -39,6 +38,6 @@ exports.localFunctionSet = () => {
 
 exports.sqlFunctions = () => {
   const arr = [];
-  arr['seqFuncGeneric'] = (fun, colName, name) => [seq.fn(fun, seq.col(colName)), name];
+  arr.seqFuncGeneric = (fun, colName, name) => [seq.fn(fun, seq.col(colName)), name];
   return arr;
-}
+};
