@@ -266,7 +266,7 @@ function activeFindByParam(param, req, res) {
   });
 }
 
-function json_add_attr(obj, field, value) {
+async function json_add_attr(obj, field, value) {
   obj[field] = value;
 }
 function collectAttributes(seq, query) {
@@ -285,45 +285,47 @@ function collectAttributes(seq, query) {
   return attr;
 }
 
-function executeLocalFunctions(query) {
+async function executeLocalFunctions(query) {
   const attr = [];
-  Object.entries(query).forEach(([key, value]) => {
+  for (const [key, value] of Object.entries(query)) {
     if (value === 'true') {
       if (localFunctionsMap.has(key)) {
         const val = localFunctionsMap.get(key);
         // eslint-disable-next-line no-await-in-loop
-        const result = val[0](db, query.city, val[1]);
-        attr.push({ [`${key}`]: result });
+        await val[0](db, query.city, val[1]).then((result) => {
+          attr[`${key}`] = result;
+        });
+    
       }
     }
-  });
+  }
   console.log(attr);
   return attr;
 }
 async function get_stats(seq, query, city, res) {
   let jsonObj;
   const attr = collectAttributes(seq, query);
-  const attr_local = executeLocalFunctions(query);
+  await executeLocalFunctions(query).then(async (local_res) => {
+    await db.Properties.findAll({
+      where: { city: { [Op.like]: `%${city}%` } },
+      attributes: attr,
+    }).then(async (r) => {
+      jsonObj = r[0].toJSON();
+      json_add_attr(jsonObj, 'Median cost', local_res.med_rent);
+      json_add_attr(jsonObj, 'Median deposit', local_res.med_deposit);
+      json_add_attr(jsonObj, 'City', city.length === 0 ? '*' : city);
+    }).catch((err) => ({ status: 500, res: err }));
+  });
 
-  await db.Properties.findAll({
-    where: {city: {[Op.like]: `%${city}%`}},
-    attributes: attr,
-  }).then((r) => {
-    jsonObj = r[0].toJSON();
-    console.log(`IM HEREEE :${jsonObj}`);
-    json_add_attr(jsonObj, 'Median cost', attr_local.med_rent);
-    json_add_attr(jsonObj, 'Median deposit', attr_local.med_deposit);
-    json_add_attr(jsonObj, 'City', city.length === 0 ? '*' : city);
-  }).catch((err) => ({status: 500, res: err}));
   return { status: 200, res: jsonObj };
 }
 
-exports.statistics = (req, res) => {
+exports.statistics = async (req, res) => {
   let { city } = req.params;
   city = city || '';
   const seq = db.Sequelize;
   console.log(req.query);
-  get_stats(seq, req.query, city, res).then((stats) => {
+  await get_stats(seq, req.query, city, res).then((stats) => {
     if (stats.status === 200) {
       res.status(200).send(stats.res);
     } else if (stats.status === 204) {
