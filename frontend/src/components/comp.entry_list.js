@@ -56,7 +56,7 @@ export default class SearchArticle extends Component {
     }
 
     componentDidMount() {
-        this.retrieveEntries();
+
     }
 
     removeEntry = () => {

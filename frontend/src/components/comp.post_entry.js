@@ -8,7 +8,7 @@ import {textFieldParams, checkboxParams} from "./params_field_types";
 export default class PostArticle extends Component {
     constructor(props) {
         super(props);
-        this.state = newState(fieldSet);
+        this.state = newState(fieldSet, '');
     }
 
     uploadArticle = () => {
@@ -24,7 +24,7 @@ export default class PostArticle extends Component {
 
 
     continue = () => {
-        const state = newState(fieldSet);
+        const state = newState(fieldSet, '');
         this.setState({...state});
     }
 

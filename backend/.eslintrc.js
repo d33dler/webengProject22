@@ -12,5 +12,11 @@ module.exports = {
   },
   rules: {
     properties: 0,
+    camelcase: 0,
+    'no-unused-vars': 0,
+    indent: 0,
+    'space-before-blocks': 0,
+    'padded-blocks': 0,
+    'no-trailing-spaces': 0,
   },
 };

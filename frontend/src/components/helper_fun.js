@@ -2,28 +2,22 @@
  * Helper functions Javascript file
  */
 
-import React, {useState} from "react";
+import React from "react";
 
 /**
  *
  * @param fieldSet
+ * @param defaultVal
  * @returns {{submitted: boolean}}
  */
-export function newState(fieldSet){
+export function newState(fieldSet, defaultVal){
     let state = {submitted: false};
     for (let i = 0; i < fieldSet.length; i++) {
-        state[`${fieldSet[i].id}`] = '';
+        state[`${fieldSet[i].id}`] = defaultVal;
     }
     return state;
 }
 
-export function newStateful(fieldSet){
-    let state = {};
-    for (let i = 0; i < fieldSet.length; i++) {
-        state[`${fieldSet[i].id}`] = useState('');
-    }
-    return state;
-}
 
 export function handleChange(comp,value, event){
     comp.setState({[`${value}`]: event.target.value});

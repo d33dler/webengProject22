@@ -2,7 +2,7 @@ const express = require('express');
 const cors = require('cors');
 
 const app = express();
-
+var bodyParser = require('body-parser');
 const corsSettings = {
   origin: 'http://localhost:8083',
 };
@@ -11,13 +11,10 @@ app.use(cors(corsSettings));
 
 // parse requests of content-type - application/json
 app.use(express.json());
-
+app.use(bodyParser.json());
 // parse requests of content-type - application/x-www-form-urlencoded
 app.use(express.urlencoded({ extended: true }));
-// simple route
-app.get('/', (req, res) => {
-  res.json({ message: 'TestDriving server GR23' });
-});
+
 require('./routes/kamernet.routes')(app);
 
 // set port, listen for requests

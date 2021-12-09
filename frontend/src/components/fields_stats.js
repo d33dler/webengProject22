@@ -5,33 +5,39 @@ export const fieldSet = [
         type: 'text'
     },
     {
+        name: 'Population N',
+        id: 'count_id',
+        type: 'checkbox',
+    },
+    {
         name: 'Mean rent',
         id: 'mean_rent',
-        type: 'checkbox'
+        type: 'checkbox',
     },
     {
         name: 'Mean deposit',
         id: 'mean_deposit',
-        type: 'checkbox'
+        type: 'checkbox',
     },
     {
         name: 'Median rent',
         id: 'med_rent',
-        type: 'checkbox'
+        type: 'checkbox',
     },
     {
         name: 'Median deposit',
         id: 'med_deposit',
-        type: 'checkbox'
+        type: 'checkbox',
     },
     {
         name: 'SD rent',
         id: 'sd_rent',
-        type: 'checkbox'
+        type: 'checkbox',
+        fun: 'STD',
     },
     {
         name: 'SD deposit',
         id: 'sd_deposit',
-        type: 'checkbox'
+        type: 'checkbox',
     }
 ]

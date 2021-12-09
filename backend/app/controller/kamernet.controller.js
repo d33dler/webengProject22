@@ -3,9 +3,15 @@ const { response } = require('express');
 const medianAverage = require('median-average');
 const converter = require('json-2-csv');
 const db = require('../db/seq');
-require('sequelize-values')(Sequelize);
-// Create and upload a new property
+const { calc_median_1 } = require('../db/seq/statistic_sql_fun');
+const { seqFunctionMapping, localFunctionMapping } = require('../db/seq/functionSet');
 
+const seqFunctionsMap = seqFunctionMapping();
+const localFunctionsMap = localFunctionMapping();
+
+require('sequelize-values')(Sequelize);
+
+// Create and upload a new property
 exports.create = (req, res) => {
   const rentProp = {
     address: req.body.address,
@@ -260,13 +266,66 @@ function activeFindByParam(param, req, res) {
   });
 }
 
-exports.statistics = async (req, res) => {
+function json_add_attr(obj, field, value) {
+  obj[field] = value;
+}
+function collectAttributes(seq, query) {
+  const attr = [];
+  Object.entries(query).forEach(
+      ([key, value]) => {
+        if (value === 'true') {
+          if (seqFunctionsMap.has(key)){
+            const val = seqFunctionsMap.get(key);
+            attr.push([seq.fn(val[0], seq.col(val[1])), key]);
+          }
+        }
+      },
+  );
+  console.log(attr);
+  return attr;
+}
+
+function executeLocalFunctions(query) {
+  const attr = [];
+  Object.entries(query).forEach(([key, value]) => {
+    if (value === 'true') {
+      if (localFunctionsMap.has(key)) {
+        const val = localFunctionsMap.get(key);
+        // eslint-disable-next-line no-await-in-loop
+        const result = val[0](db, query.city, val[1]);
+        attr.push({ [`${key}`]: result });
+      }
+    }
+  });
+  console.log(attr);
+  return attr;
+}
+async function get_stats(seq, query, city, res) {
+  let jsonObj;
+  const attr = collectAttributes(seq, query);
+  const attr_local = executeLocalFunctions(query);
+
+  await db.Properties.findAll({
+    where: {city: {[Op.like]: `%${city}%`}},
+    attributes: attr,
+  }).then((r) => {
+    jsonObj = r[0].toJSON();
+    console.log(`IM HEREEE :${jsonObj}`);
+    json_add_attr(jsonObj, 'Median cost', attr_local.med_rent);
+    json_add_attr(jsonObj, 'Median deposit', attr_local.med_deposit);
+    json_add_attr(jsonObj, 'City', city.length === 0 ? '*' : city);
+  }).catch((err) => ({status: 500, res: err}));
+  return { status: 200, res: jsonObj };
+}
+
+exports.statistics = (req, res) => {
   let { city } = req.params;
   city = city || '';
   const seq = db.Sequelize;
-  await get_stats(seq, city, res).then((stats) => {
+  console.log(req.query);
+  get_stats(seq, req.query, city, res).then((stats) => {
     if (stats.status === 200) {
-      res.status(200).send(stats);
+      res.status(200).send(stats.res);
     } else if (stats.status === 204) {
       res.status(204).send();
     } else {
@@ -274,61 +333,3 @@ exports.statistics = async (req, res) => {
     }
   });
 };
-
-function json_add_attr(obj, field, value) {
-  obj[field] = value;
-}
-
-async function get_stats(seq, city, res) {
-  const m_deposit = await calc_median(city, 'deposit');
-  const m_cost = await calc_median(city, 'rent');
-
-  if (m_deposit != null) {
-    await db.Properties.findAll({
-      where: { city: { [Op.like]: `%${city}%` } },
-      attributes: [
-        [seq.fn('COUNT', seq.col('externalId')), 'Entries'],
-        [seq.fn('AVG', seq.col('rent')), 'Mean cost'],
-        [seq.fn('STD', seq.col('rent')), 'SD cost'],
-        [seq.fn('AVG', seq.col('deposit')), 'Mean deposit'],
-        [seq.fn('STD', seq.col('deposit')), 'SD deposit'],
-      ],
-    }).then((r) => {
-      const jsonObj = r[0].toJSON();
-      json_add_attr(jsonObj, 'Median cost', m_cost);
-      json_add_attr(jsonObj, 'Median deposit', m_deposit);
-      json_add_attr(jsonObj, 'City', city.length === 0 ? '*' : city);
-      return { status: 200, res: jsonObj };
-    }).catch((err) => ({ status: 500, error: err }));
-  } else return { status: 204 };
-}
-
-async function calc_median(city, param) {
-  let res = null;
-  await db.Properties.count({
-    where: { city: { [Op.like]: `%${city}%` } },
-  }).then(async (mid) => {
-    if (mid !== 0) {
-      const mid2 = Math.trunc(mid / 2) - 1;
-      mid = mid % 2 === 0 ? mid / 2 : Math.trunc(mid / 2) + 1;
-      await db.Properties.findAll({
-        where: { city: { [Op.like]: `%${city}%` } },
-        order: [[param, 'ASC']],
-        offset: mid2,
-        limit: mid - mid2,
-        attributes: [param],
-      }).then((median_res) => {
-        console.error(median_res);
-        let x = 0;
-        for (let i = 0; i < median_res.length; i++) {
-          x += median_res[i][`${param}`];
-        }
-        res = x / median_res.length;
-      });
-    } else {
-      return null;
-    }
-  });
-  console.log(res);
-  return res;
-}

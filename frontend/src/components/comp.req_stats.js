@@ -10,7 +10,7 @@ export default class StatisticForm extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            ...newState(fieldSet),
+            ...newState(fieldSet, ''),
             submitted: false,
             entries: [],
             city: '',
