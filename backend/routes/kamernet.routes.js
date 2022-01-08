@@ -2,6 +2,7 @@ const property = require('../app/controller/kamernet.controller');
 
 require('../app/controller/kamernet.controller');
 const nrp_control = require("../app/controller/kamernet.controller");
+const cors = require('cors');
 
 module.exports = (app) => {
   const nrp_control = require('../app/controller/kamernet.controller');
@@ -17,7 +18,7 @@ module.exports = (app) => {
   router.get('/:param?', nrp_control.param_find);
   router.put('/id/:id', nrp_control.id_update);
   router.delete('/id/:id', nrp_control.id_delete);
-
+  router.get('/search', nrp_control.search);
   router.get('/location', nrp_control.lat_long_find);
   router.delete('/location', nrp_control.lat_long_delete);
   router.put('/location', nrp_control.lat_long_update);

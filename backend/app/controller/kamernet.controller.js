@@ -2,27 +2,28 @@ const { Op, Sequelize } = require('sequelize');
 const medianAverage = require('median-average');
 const converter = require('json-2-csv');
 const db = require('../db/seq');
-const { calc_median_1 } = require('../db/seq/statistic_sql_fun');
 const { seqFunctionMapping, localFunctionMapping } = require('../db/seq/functionSet');
+const { queryOp } = require('../db/seq/query-operators');
 
 const seqFunctionsMap = seqFunctionMapping();
 const localFunctionsMap = localFunctionMapping();
 
 require('sequelize-values')(Sequelize);
 
+const propAttributes = (req) => ({//abstract out//make-reusable
+    address: req.body.address,
+    postalCode: req.body.postalCode,
+    city: req.body.city,
+    rent: req.body.rent,
+    deposit: req.body.deposit,
+    areaSqm: req.body.areaSqm,
+    isRoomActive: req.body.isRoomActive === 'Yes',
+});
+
 // Create and upload a new property
 exports.create = (req, res) => {
-    const rentProp = {
-        address: req.body.address,
-        postalCode: req.body.postalCode,
-        city: req.body.city,
-        rent: req.body.rent,
-        deposit: req.body.deposit,
-        areaSqm: req.body.areaSqm,
-        isRoomActive: req.body.isRoomActive === 'Yes',
-    };
     // Upload new property in the database
-    db.Properties.create(rentProp)
+    db.Properties.create(propAttributes(req))
         .then((data) => res.status(200).send(data.getValues()))
         .catch((err) => {
             res.status(500).send({
@@ -32,9 +33,24 @@ exports.create = (req, res) => {
         });
 };
 
+exports.search = (req, res) => {
+
+    const { searchParams } = req.query;
+    let conditions = collectConditions(searchParams);
+    db.Properties.findAll({ where: { [Op.and]: conditions },
+        })
+};
+
+const collectConditions = (searchParams) => {
+    const conditions = [];
+    Object.entries(searchParams).forEach((([key, attr]) => {
+       conditions.push({ [key]: { [queryOp[attr.op]]: attr.value } }); //add ordering // split options const creation
+    }));
+    return conditions;
+};
 exports.city_find = (req, res) => {
     const { value } = req.query;
-    const condition = value ? { city: { [Op.like]: `${value}%` } } : null;
+    const condition = value ? { city: { [queryOp.like]: `${value}%` } } : null;
     db.Cities.findAll({ where: condition }).then((data) => {
         if (data.length > 0) {
             res.status(200).send(data);
@@ -242,16 +258,15 @@ exports.active_top_list = (req, res) => {
 function activeFindByParam(param, req, res) {
     let { city } = req.params;
     city = city || '';
-    const { ascending } = req.query;
-    const n = req.query.amount;
-    const asc = (ascending === 'true') ? 'ASC' : 'DESC';
+    const { ascending, amount: n } = req.query;
+    const asc = (parseInt(ascending, 10) === 1) ? 'ASC' : 'DESC';
     const seq = db.sequelizeProperties;
     db.Properties.findAll({
-        limit: parseInt(n),
+        limit: parseInt(n, 10),
         where: {
             [Op.and]:
                 [
-                    { isRoomActive: true },
+                    { isRoomActive: { [Op.eq]: 1 } },
                     { city: { [Op.like]: `%${city}%` } },
                 ],
         },
@@ -276,7 +291,8 @@ function collectAttributes(seq, query) {
             if (value === 'true') {
                 if (seqFunctionsMap.has(key)) {
                     const val = seqFunctionsMap.get(key);
-                    attr.push([seq.fn(val[0], seq.col(val[1])), key]);
+                    attr.push();
+                    delete query[key];
                 }
             }
         },

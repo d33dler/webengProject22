@@ -123,7 +123,7 @@ export default class SearchArticle extends Component {
                 <div className="col-md-6">
                     <h4>Article List</h4>
                     <ul className="list-group">
-                        {entries.length>0 &&
+                        {entries &&
                         entries.map((entry, index) => (
                             <li
                                 className={

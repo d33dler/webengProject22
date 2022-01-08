@@ -1,7 +1,7 @@
 import axios from "axios";
 
 export default axios.create({
-    baseURL: "http://localhost:8080/nrp/",
+    baseURL: "http://192.168.178.11:8080/nrp/",
     headers: {
         "Content-type": "application/json"
     }
