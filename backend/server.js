@@ -5,20 +5,9 @@ const app = express();
 const bodyParser = require('body-parser');
 
 
-const whitelist = ['http://localhost:8083', 'http://192.168.178.11:8083', 'http://localhost:8085'];
-const corsOptions = {
-  origin: function (origin, callback) {
-    if (whitelist.indexOf(origin) !== -1) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
-};
-
 const corsSettings = {
-  origin: ['http://localhost:8083', 'http://192.168.178.11:8083', 'http://localhost:8085'],
-}
+  origin: ['http://localhost:8083', 'http://192.168.178.11:8083', 'http://localhost:8085', 'http://localhost'],
+};
 app.use(cors(corsSettings));
 // app.use(cors(corsSettings));
 

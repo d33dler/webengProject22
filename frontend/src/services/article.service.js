@@ -12,6 +12,12 @@ class ArticleService {
       }
     });
   }
+
+  search(filter_options) {
+    return axios.get(`articles/search`, {
+      params: filter_options
+    })
+  }
   create(data) {
     return axios.post('articles/new', data); // test this ?
   }

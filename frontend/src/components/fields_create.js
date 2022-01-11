@@ -34,6 +34,6 @@ export const fieldSet = [
     id: 'isRoomActive',
     type: 'radio',
     options: ['Yes', 'No'],
-    values: [true,false],
+    values: [true, false],
   }
 ];

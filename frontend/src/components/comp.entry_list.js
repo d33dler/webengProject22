@@ -2,6 +2,7 @@ import React, {Component} from "react";
 import ArticleService from '../services/article.service'
 import {Link} from "react-router-dom";
 import DisplayEntry from "./comp.display_entry";
+import _ from "lodash";
 const inputGrSm = "input-group input-group-sm mb-3"
 export default class SearchArticle extends Component {
     constructor(props) {
@@ -12,9 +13,12 @@ export default class SearchArticle extends Component {
             currentEntry: null,
             currentIndex: -1,
             id_search: "",
-            rent: {min: 0, max: 0},
-            sqm: {min: 0, max: 0},
-            loc_search: {lat: "", long: ""}
+            rent_min: "",
+            rent_max: "",
+            sqm_min: "",
+            sqm_max: "",
+            lat:"",
+            long: "",
         };
     }
 
@@ -22,6 +26,25 @@ export default class SearchArticle extends Component {
         this.refreshList()
         const {id_search} = this.state;
         ArticleService.getById(id_search)
+            .then(response => {
+                let data;
+                if (response.status === 204) {
+                    data = null;
+                } else data = response.data;
+
+                this.setState({
+                    entries: data
+                });
+                console.log(response.data);
+            })
+            .catch(e => {
+                console.log(e);
+            });
+    }
+    retrieveEntries2 = () => {
+        this.refreshList()
+        const options = _.pick(this.state, (value, key) => !!value);
+        ArticleService.search(options)
             .then(response => {
                 let data;
                 if (response.status === 204) {
@@ -66,25 +89,25 @@ export default class SearchArticle extends Component {
 
     renderInput = (clazz, value, ph) => {
         return (<input
+            id={clazz}
             type="text"
             className="form-control"
             placeholder={ph}
-            value={this.state[`${value}`]}
+            value={this.state[value]}
             onChange={(event) => this.handleChange(value, event)}
         />)
     }
-    renderRangeInput = (value, label) => {
+    renderRangeInput = (value_min, value_max, label) => {
         return (
             <section class="mb-lg-2">
                 <label htmlFor="to">{label} </label>
                 <div className="d-flex align-items-center mt-sm-1 pb-1">
                     <div className="md-form md-outline my-0">
-                        {this.renderInput("form-control sm-0",value+".min",'min')}
+                        {this.renderInput("form-control sm-0",value_min,'min')}
                     </div>
                     <p className="px-1 mb-lg-2 text-muted"> - </p>
                     <div className="md-form md-outline my-0">
-                        {this.renderInput("form-control sm-0",value+".max",'max')}
-
+                        {this.renderInput("form-control sm-0",value_max,'max')}
                     </div>
                 </div>
             </section>
@@ -102,14 +125,14 @@ export default class SearchArticle extends Component {
                     </div>
                     <label style={{marginRight: '20px'}} >Location: </label>
                     <div className={inputGrSm}>
-                        {this.renderInput("form-control", 'loc_search.lat', "lat")}
-                        {this.renderInput("form-control", 'loc_search.long', "long")}
+                        {this.renderInput("form-control", 'lat', "latitude")}
+                        {this.renderInput("form-control", 'long', "longitude")}
                     </div>
                     <div className={inputGrSm}>
-                        {this.renderRangeInput("rent", "Rent:")}
+                        {this.renderRangeInput('rent_min', 'rent_max', "Rent:")}
                     </div>
                     <div className={inputGrSm}>
-                        {this.renderRangeInput("sqm", "Square Area (meters):")}
+                        {this.renderRangeInput('sqm_min', 'sqm_max', "Square Area (meters):")}
                     </div>
                     <div className="input-group-append">
                         <button

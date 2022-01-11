@@ -45,7 +45,7 @@ export default class PostArticle extends Component {
                     <div>
                         {fieldSet.map((field) => {
                             const {
-                                name, id, type, options
+                                name, id, type, options, values
                             } = field;
                             const {[id]: stateField} = this.state;
                             switch (type) {
@@ -53,7 +53,7 @@ export default class PostArticle extends Component {
                                     return (renderField(this, textFieldParams,stateField, id, name,
                                         (event => handleChange(this, id, event))));
                                 case 'radio':
-                                    return (renderRadio(this, stateField, id, name, options));
+                                    return (renderRadio(this, stateField, id, name, options, values));
                                 default:
                                     return null;
                             }

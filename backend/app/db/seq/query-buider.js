@@ -26,5 +26,5 @@ const queryBuilder = (options) => {
     Object.entries(options).forEach(opt => {
         config[`${opt}`](optionsOut, opt.args); //test this
     });
-    return optionsOut;//change t
+    return optionsOut;
 }

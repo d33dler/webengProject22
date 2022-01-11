@@ -1,7 +1,7 @@
 const property = require('../app/controller/kamernet.controller');
 
 require('../app/controller/kamernet.controller');
-const nrp_control = require("../app/controller/kamernet.controller");
+const nrp_control = require('../app/controller/kamernet.controller');
 const cors = require('cors');
 
 module.exports = (app) => {

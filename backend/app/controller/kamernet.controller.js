@@ -10,15 +10,13 @@ const localFunctionsMap = localFunctionMapping();
 
 require('sequelize-values')(Sequelize);
 
-const propAttributes = (req) => ({//abstract out//make-reusable
-    address: req.body.address,
-    postalCode: req.body.postalCode,
-    city: req.body.city,
-    rent: req.body.rent,
-    deposit: req.body.deposit,
-    areaSqm: req.body.areaSqm,
-    isRoomActive: req.body.isRoomActive === 'Yes',
-});
+const propAttributes = (req) => {
+    const attrs = {};
+    Object.entries(req.body).forEach(([key, value]) => {
+    attrs[key] = value;
+    });
+    return attrs;
+};
 
 // Create and upload a new property
 exports.create = (req, res) => {
@@ -36,16 +34,15 @@ exports.create = (req, res) => {
 exports.search = (req, res) => {
 
     const { searchParams } = req.query;
-    let conditions = collectConditions(searchParams);
-    db.Properties.findAll({ where: { [Op.and]: conditions },
-        })
+    const conditions = collectConditions(searchParams);
+    db.Properties.findAll({ where: { [Op.and]: conditions } });
 };
 
 const collectConditions = (searchParams) => {
     const conditions = [];
-    Object.entries(searchParams).forEach((([key, attr]) => {
-       conditions.push({ [key]: { [queryOp[attr.op]]: attr.value } }); //add ordering // split options const creation
-    }));
+    Object.entries(searchParams).forEach(([key, attr]) => {
+       conditions.push({ [key]: { [queryOp[attr.op]]: attr.value } }); // add ordering // split options const creation
+    });
     return conditions;
 };
 exports.city_find = (req, res) => {
@@ -291,7 +288,7 @@ function collectAttributes(seq, query) {
             if (value === 'true') {
                 if (seqFunctionsMap.has(key)) {
                     const val = seqFunctionsMap.get(key);
-                    attr.push();
+                    attr.push([seq.fn(val[0], seq.col(val[1])), key]);
                     delete query[key];
                 }
             }
@@ -323,7 +320,7 @@ async function addAllLocalResults(resultSet, response) {
     });
 }
 
-async function get_stats(seq, query, city, res) {
+async function get_stats(seq, query, city) {
     let response;
     const attr = collectAttributes(seq, query);
     await executeLocalFunctions(query).then(async (local_res) => {
@@ -342,8 +339,9 @@ async function get_stats(seq, query, city, res) {
 exports.statistics = async (req, res) => {
     let { city } = req.params;
     city = city || '';
+
     const seq = db.Sequelize;
-    await get_stats(seq, req.query, city, res).then((stats) => {
+    await get_stats(seq, req.query, city).then((stats) => {
         if (stats.status === 200) {
             res.status(200).send(stats.res);
         } else if (stats.status === 204) {

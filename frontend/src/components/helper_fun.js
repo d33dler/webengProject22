@@ -37,7 +37,7 @@ export function createLabel(fieldName, tok){
     return (<label id={fieldName} htmlFor={tok}>{fieldName}</label>)
 }
 
-export function renderRadio(comp, arg, id, fieldName, options){
+export function renderRadio(comp, arg, id, fieldName, options, values){
     return (
         <>
             <div>
@@ -47,9 +47,9 @@ export function renderRadio(comp, arg, id, fieldName, options){
                         <div className="form-group">
                             <input type="radio"
                                    id={`${id}_${o}`}
-                                   value={o}
+                                   value={values[ix]}
                                    onChange={(event => handleChange(comp,id, event))}
-                                   checked={comp.state[`${id}`] === o}/>
+                                   checked={comp.state[`${id}`] == values[ix]}/>
                             <label htmlFor={`${id}_${o}`}>{o}</label>
                         </div>
                     ))}
