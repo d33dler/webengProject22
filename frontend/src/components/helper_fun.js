@@ -92,8 +92,8 @@ export function renderRadioHook(id, value, valueSetter,values, options, label) {
                                    id={`${id}_${o}`}
                                    name={id}
                                    value={values[ix]}
-                                   checked={true}
                                    onClick={(event => handleChangeHook(value, valueSetter, id, event))}
+                                   onChange={(event => handleChangeHook(value, valueSetter, id, event))}
                             />
                             <label htmlFor={`${id}_${o}`}>{o}</label>
                         </div>

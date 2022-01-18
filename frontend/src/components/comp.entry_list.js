@@ -4,6 +4,7 @@ import {Link} from "react-router-dom";
 import DisplayEntry from "./comp.display_entry";
 import _, {isUndefined} from "lodash";
 import {fields_search, fieldMap} from "./fields_search";
+import structuredClone from "@ungap/structured-clone"
 import {
     handleChange,
     handleChangeHook,
@@ -30,9 +31,9 @@ const SearchArticle = () => {
 
     function retrieveEntries() {
         refreshList()
-        prepareInputs()
-        console.log(inputs);
-        ArticleService.filterSearch(inputs)
+        const parsed = parseInputs()
+        console.log(parsed);
+        ArticleService.filterSearch(parsed)
             .then(response => {
                 let data;
                 if (response.status === 204) {
@@ -49,23 +50,24 @@ const SearchArticle = () => {
     }
 
 
-    function prepareInputs() {
-
-        Object.entries(inputs).forEach(([key, value]) => {
+    function parseInputs() {
+        const inputsCopy = structuredClone(inputs)
+        Object.entries(inputsCopy).forEach(([key, value]) => {
             console.log(key)
                const field = fieldMap.get(key);
                if(!isUndefined(field) && !isUndefined(field.parent)) {
                    console.log(field);
-                   if(!isUndefined(inputs[field.parent])){
-                       const v = inputs[key];
+                   if(!isUndefined(inputsCopy[field.parent])){
+                       const v = inputsCopy[key];
                        const arr =  [];
                        arr.push(v);
-                       arr.push(inputs[field.parent])
-                       inputs[field.parent] = arr;
+                       arr.push(inputsCopy[field.parent])
+                       inputsCopy[field.parent] = arr;
                    }
-                   delete inputs[key]
+                   delete inputsCopy[key]
                }
         })
+        return inputsCopy;
     }
 
 
@@ -100,11 +102,10 @@ const SearchArticle = () => {
                         case 'range':
                             return renderRangeInput(id, inputs, setInputs, name)
                         case 'checkbox':
-                            inputs[id] = false;
+                            if(isUndefined(inputs[id])) inputs[id] = false;
                             return (renderField(checkboxParams, id, name,
                                 (e => handleCheckHook(inputs, setInputs, id, e))));
                         case 'radio':
-                            inputs[id] = values[values.length - 1];
                             return (renderRadioHook(id, inputs, setInputs, values, options, name))
                         default:
                             return null;

@@ -2,6 +2,7 @@ const { Op } = require('sequelize');
 const { queryOp } = require('./query-operators');
 
 const { fieldMap } = require('../fieldSets/fields_search');
+const {isUndefined} = require("lodash");
 
 function loop(arr, instruction, op, _exec) {
     for (let i = 0; i < arr.length; i++) {
@@ -23,7 +24,9 @@ const config = {
     order: (instruction, args) => {
         const { param, argArr } = args;
         instruction.order = [];
-        instruction.order.push([`${argArr[0]}`, argArr[1]]);
+        if(!isUndefined(argArr[0]) && !isUndefined(argArr[1])){
+            instruction.order.push([`${argArr[0]}`, argArr[1]]);
+        }
     },
     limit: (instruction, args) => {
         const { argArr } = args;

@@ -1,7 +1,7 @@
 const fields_search = [
     {
-        id: 'external_id',
-        tid: 'external_id',
+        id: 'externalId',
+        tid: 'externalId',
         sqlOp: 'where',
         op: 'eq',
     },

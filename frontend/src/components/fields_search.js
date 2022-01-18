@@ -1,6 +1,6 @@
 export const fields_search = [
     {
-        id: 'external_id',
+        id: 'externalId',
         type: 'text',
         name: 'External Id',
         placeholder: 'ID',
