@@ -13,8 +13,8 @@ class ArticleService {
     });
   }
 
-  search(filter_options) {
-    return axios.get(`articles/search`, {
+  filterSearch(filter_options) {
+    return axios.get(`articles/search/filter`, {
       params: filter_options
     })
   }
@@ -80,15 +80,7 @@ class ArticleService {
   }
   getStatistics(city,body){
     return axios.get(`articles/statistics/${city}`, {
-      params: {
-        city: city,
-        sd_rent: body.sd_rent,
-        mean_rent: body.mean_rent,
-        sd_deposit: body.sd_deposit,
-        mean_deposit: body.mean_deposit,
-        med_rent: body.med_rent,
-        med_deposit: body.med_deposit
-      }
+      params: body
     })}
 
 }

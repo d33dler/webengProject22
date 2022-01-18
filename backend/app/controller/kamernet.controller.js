@@ -4,6 +4,7 @@ const converter = require('json-2-csv');
 const db = require('../db/seq');
 const { seqFunctionMapping, localFunctionMapping } = require('../db/seq/functionSet');
 const { queryOp } = require('../db/seq/query-operators');
+const { createQuery } = require('../db/seq/query-buider');
 
 const seqFunctionsMap = seqFunctionMapping();
 const localFunctionsMap = localFunctionMapping();
@@ -31,20 +32,17 @@ exports.create = (req, res) => {
         });
 };
 
+exports.trylogin = (req, res) => {
+    res.status(200).send('Server is online');
+};
+
 exports.search = (req, res) => {
-
-    const { searchParams } = req.query;
-    const conditions = collectConditions(searchParams);
-    db.Properties.findAll({ where: { [Op.and]: conditions } });
-};
-
-const collectConditions = (searchParams) => {
-    const conditions = [];
-    Object.entries(searchParams).forEach(([key, attr]) => {
-       conditions.push({ [key]: { [queryOp[attr.op]]: attr.value } }); // add ordering // split options const creation
+    const conditions = createQuery(req.query);
+    db.Properties.findAll(conditions).then((r) => {
+        res.status(200).send(r);
     });
-    return conditions;
 };
+
 exports.city_find = (req, res) => {
     const { value } = req.query;
     const condition = value ? { city: { [queryOp.like]: `${value}%` } } : null;
@@ -54,6 +52,7 @@ exports.city_find = (req, res) => {
         } else res.status(204).send(data);
     });
 };
+
 exports.param_find = (req, res) => {
     const { param } = req.params;
     const { value } = req.query;
@@ -322,17 +321,18 @@ async function addAllLocalResults(resultSet, response) {
 
 async function get_stats(seq, query, city) {
     let response;
+   
     const attr = collectAttributes(seq, query);
     await executeLocalFunctions(query).then(async (local_res) => {
         await db.Properties.findAll({
             where: { city: { [Op.like]: `%${city}%` } },
             attributes: attr,
         }).then(async (r) => {
+            console.log(r);
             response = r[0].toJSON();
             await addAllLocalResults(local_res, response);
         }).catch((err) => ({ status: 500, res: err }));
     });
-
     return { status: 200, res: response };
 }
 
@@ -341,6 +341,8 @@ exports.statistics = async (req, res) => {
     city = city || '';
 
     const seq = db.Sequelize;
+    req.query.city = city;
+
     await get_stats(seq, req.query, city).then((stats) => {
         if (stats.status === 200) {
             res.status(200).send(stats.res);

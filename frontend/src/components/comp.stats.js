@@ -2,7 +2,7 @@ import React, {Component, useEffect, useState} from "react";
 import ArticleService from '../services/article.service'
 import DisplayEntry from "./comp.display_entry";
 import {fieldSet} from "./fields_stats";
-import {renderField, renderRadio, newState, handleChange, newStateful} from "./helper_fun";
+import {renderField, renderRadio, newState, handleChange, handleCheckHook, stateful} from "./helper_fun";
 import {Link, useParams, useRouteMatch, withRouter} from "react-router-dom";
 import {checkboxParams, textFieldParams} from "./params_field_types";
 import {toJSON} from "lodash/seq";
@@ -12,28 +12,19 @@ const Statistics = () => {
     const {city} = useParams();
     const [submitted, setSubmit] = useState(false);
     const [data, setData] = useState({});
-    const body = stateful(fieldSet, false);
+    const [body, setBody] = useState(stateful(fieldSet, false));
 
 
-    function handleCheck(value, e) {
-        body[`${value}`] = e.target.checked;
-        console.log(body[`${value}`])
-    }
 
-    function stateful(fieldSet, defaultVal){
-        let state = {submitted: false};
-        for (let i = 0; i < fieldSet.length; i++) {
-            state[`${fieldSet[i].id}`] = defaultVal;
-        }
-        return state;
-    }
+
     function prepareParams() {
-        fieldSet.map((field,ix) => {
+        fieldSet.map((field, ix) => {
             const {id, fun, col} = field
         })
     }
 
     function retrieveStats() {
+        console.log(body)
         ArticleService.getStatistics(city, body)
             .then((response) => {
                     console.log(response.data);
@@ -53,11 +44,9 @@ const Statistics = () => {
                     <div>
                         {fieldSet.map((field) => {
                             const {name, id, type} = field
-                            const {[id]: stateField} = {body};
                             switch (type) {
                                 case 'checkbox':
-                                    return (renderField(this, checkboxParams, stateField, id, name,
-                                        (event => handleCheck(id, event))));
+                                    return (renderField(checkboxParams, id, name, (event => handleCheckHook(body, setBody, id, event))));
                                 default:
                                     return null;
                             }
@@ -67,13 +56,13 @@ const Statistics = () => {
                             className="btn btn-outline-secondary"
                             type="button"
                             onClick={retrieveStats}
-                            >
+                        >
                             Get statistics
-                            </button>
-                            </div>)
-                        }
-                    </div>
-                </div>)
-            };
+                        </button>
+                    </div>)
+            }
+        </div>
+    </div>)
+};
 
-            export default Statistics;
+export default Statistics;

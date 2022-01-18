@@ -2,7 +2,7 @@ const { sqlFunctions, localFunctionSet} = require('./statistic_sql_fun');
 
 const seqFunctions = [
   {
-    id: 'count_id',
+    id: 'population',
     fun: 'COUNT',
     col: 'externalId',
   },

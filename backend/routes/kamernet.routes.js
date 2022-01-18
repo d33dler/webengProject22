@@ -13,12 +13,13 @@ module.exports = (app) => {
   router.post('/new', nrp_control.create);
 
   // Retrieve a single Tutorial with id
+  router.get('/', nrp_control.trylogin);
   router.get('/id/:id', nrp_control.id_find);
   router.get('/:city?', nrp_control.city_find);
   router.get('/:param?', nrp_control.param_find);
   router.put('/id/:id', nrp_control.id_update);
   router.delete('/id/:id', nrp_control.id_delete);
-  router.get('/search', nrp_control.search);
+  router.get('/search/filter', nrp_control.search);
   router.get('/location', nrp_control.lat_long_find);
   router.delete('/location', nrp_control.lat_long_delete);
   router.put('/location', nrp_control.lat_long_update);

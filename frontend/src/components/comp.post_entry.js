@@ -47,13 +47,11 @@ export default class PostArticle extends Component {
                             const {
                                 name, id, type, options, values
                             } = field;
-                            const {[id]: stateField} = this.state;
                             switch (type) {
                                 case 'text':
-                                    return (renderField(this, textFieldParams,stateField, id, name,
-                                        (event => handleChange(this, id, event))));
+                                    return renderField(textFieldParams, id, name, event => handleChange(this, id, event))
                                 case 'radio':
-                                    return (renderRadio(this, stateField, id, name, options, values));
+                                    return (renderRadio(this, id, name, options, values));
                                 default:
                                     return null;
                             }

@@ -6,8 +6,9 @@ export const fieldSet = [
     },
     {
         name: 'Population N',
-        id: 'count_id',
+        id: 'population',
         type: 'checkbox',
+        fun: 'COUNT',
     },
     {
         name: 'Mean rent',

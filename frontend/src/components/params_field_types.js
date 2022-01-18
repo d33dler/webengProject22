@@ -1,6 +1,6 @@
 export const textFieldParams = {
     type: 'text',
-    marginRight: '150px'
+    marginRight: '220px'
 }
 export const checkboxParams = {
     type: 'checkbox',
