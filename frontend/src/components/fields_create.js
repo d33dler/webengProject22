@@ -1,4 +1,4 @@
-export const fieldSet = [
+export const creationFields = [
   {
     name: 'Address',
     id: 'address',
@@ -30,9 +30,17 @@ export const fieldSet = [
     type: 'text',
   },
   {
+    name: 'Latitude',
+    id: 'latitude',
+    type: 'text',
+  },
+  { name: 'Longitude',
+    id: 'longitude',
+    type: 'text',},
+  {
     name: 'Room active',
     id: 'isRoomActive',
-    type: 'radio',
+    type: 'checkbox',
     options: ['Yes', 'No'],
     values: [true, false],
   }

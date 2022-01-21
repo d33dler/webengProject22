@@ -58,7 +58,9 @@ export const fields_search = [
     {
         name: 'Room active',
         id: 'isRoomActive',
-        type: 'checkbox',
+        type: 'radio',
+        options: ['Any', 'Y', 'N'],
+        values: ['', 'true', 'false'],
         placeholder: 'ID',
         sqlOp: 'where',
         op: 'eq',
@@ -68,8 +70,8 @@ export const fields_search = [
         id: 'order',
         child: 'order_by',
         type: 'radio',
-        options: ['None','Ascending', 'Descending'],
-        values: ['','ASC', 'DESC'],
+        options: ['None', 'Ascending', 'Descending'],
+        values: ['', 'ASC', 'DESC'],
         placeholder: 'ID',
         sqlOp: 'order',
     },
@@ -78,8 +80,8 @@ export const fields_search = [
         parent: 'order',
         id: 'order_by',
         type: 'radio',
-        options: ['Rent','Deposit', 'Area(m2)'],
-        values: ['rent','deposit', 'areaSqm'],
+        options: ['Rent', 'Deposit', 'Area(m2)'],
+        values: ['rent', 'deposit', 'areaSqm'],
         placeholder: 'orderBy',
         sqlOp: 'order',
     },
@@ -93,6 +95,26 @@ export const fields_search = [
 ];
 
 const fieldMap = new Map();
+
+export const all_fields =
+    [
+        {id: 'externalId'},
+        {id: 'rent'},
+        {id: 'deposit_min'},
+        {id: 'deposit_max'},
+        {id: 'isRoomActive'},
+        {id: 'limit'},
+        {id: 'order'},
+        {id: 'order_by'},
+        {id: 'isRoomActive'},
+        {id: 'areaSqm'},
+        {id: 'city'},
+        {id: 'address'},
+        {id: 'rent_min'},
+        {id: 'rent_max'},
+        {id: 'postalCode'}
+    ]
+
 
 fields_search.forEach((o) => {
     fieldMap.set(o.id, o);

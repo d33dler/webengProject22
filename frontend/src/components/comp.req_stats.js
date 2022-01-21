@@ -3,7 +3,7 @@ import {fieldSet} from "./fields_stats";
 import {newState, renderField, handleCheckHook, createLabel, handleChange} from "./helper_fun";
 import {Link, useHistory, useLocation} from "react-router-dom";
 import {checkboxParams, textFieldParams} from "./params_field_types";
-import ArticleService from "../services/article.service";
+import ArticleService from "../services/backend.routes";
 
 
 export default class StatisticForm extends Component {

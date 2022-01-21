@@ -3,7 +3,8 @@
  */
 
 import React from "react";
-import {textFieldParams} from "./params_field_types";
+import {checkboxParams, textFieldParams} from "./params_field_types";
+import {isUndefined} from "lodash";
 
 /**
  *
@@ -36,12 +37,37 @@ export function handleChange(comp, value, event) {
     comp.setState({[`${value}`]: event.target.value});
 }
 
-export function renderField(params, id, fieldName, onChange) {
+
+
+export function generateDialogue( text) {
+   return <div className="modal fade" id="exampleModal" tabIndex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+         aria-hidden="true">
+        <div className="modal-dialog" role="document">
+            <div className="modal-content">
+                <div className="modal-header">
+                    <h5 className="modal-title" id="exampleModalLabel">Modal title</h5>
+                    <button type="button" className="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div className="modal-body">
+                    {text}
+                </div>
+                <div className="modal-footer">
+                    <button type="button" className="btn btn-secondary" data-dismiss="modal">OK</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+export function renderField(params, id, fieldName, onChange, defaultValue = "") {
     return (
         <div className="form-group">
             <label style={{marginRight: params.marginRight}} id={fieldName} htmlFor={id}>{fieldName}</label>
             <input type={params.type}
                    id={id}
+                   defaultValue={defaultValue}
                    onChange={onChange}/>
         </div>
     );
@@ -59,7 +85,42 @@ export function createLabel(fieldName, tok) {
     return (<label id={fieldName} htmlFor={tok}>{fieldName}</label>)
 }
 
-export function renderRangeInput(id, value, valueSetter, label) {
+export function generateForm(fields, inputs, setInputs, defaultValues = new URLSearchParams()) {
+   return fields.map((field) => {
+        const {
+            name, id, type, options, values
+        } = field;
+        switch (type) {
+            case 'text':
+                return (renderField(textFieldParams, id, name,
+                    (e => {
+                        handleChangeHook(inputs, setInputs, id, e)
+                    }), defaultValues.get(`${id}`)))
+            case 'range':
+                return renderRangeInput(id, inputs, setInputs, name, defaultValues)
+            case 'checkbox':
+                if(isUndefined(inputs[id])) inputs[id] = false;
+                return (renderField(checkboxParams, id, name,
+                    (e => handleCheckHook(inputs, setInputs, id, e))));
+            case 'radio':
+                return (renderRadioHook(id, inputs, setInputs, values, options, name, defaultValues))
+            default:
+                return null;
+        }
+    })
+}
+
+export function generateButton(label, _func ) {
+    return  <button
+        className="btn btn-outline-secondary"
+        type="button"
+        onClick={_func}
+    >{label}
+    </button>
+}
+
+
+export function renderRangeInput(id, value, valueSetter, label, defaultValues = new URLSearchParams()) {
     const id_min = id + "_min";
     const id_max = id + "_max";
     return (
@@ -68,19 +129,19 @@ export function renderRangeInput(id, value, valueSetter, label) {
                 <div className="md-form md-outline my-0">
                     {
                         renderField(textFieldParams, id_min, label + ' min',
-                            (event => handleChangeHook(value, valueSetter, id_min, event)))}
+                            (event => handleChangeHook(value, valueSetter, id_min, event)), defaultValues.get(id_min))}
                 </div>
                 <div className="md-form md-outline my-0">
                     {
                         renderField(textFieldParams, id_max, label + ' max',
-                            (event => handleChangeHook(value, valueSetter, id_max, event)))}
+                            (event => handleChangeHook(value, valueSetter, id_max, event)), defaultValues.get(id_max))}
                 </div>
             </div>
         </section>
     )
 }
 
-export function renderRadioHook(id, value, valueSetter,values, options, label) {
+export function renderRadioHook(id, value, valueSetter,values, options, label, defaultValue = new URLSearchParams()) {
     return (
         <>
             <div>
@@ -91,8 +152,9 @@ export function renderRadioHook(id, value, valueSetter,values, options, label) {
                             <input type="radio"
                                    id={`${id}_${o}`}
                                    name={id}
+                                   defaultChecked={!isUndefined(defaultValue.get(`${id}`))
+                                   && defaultValue.get(`${id}`) === values[ix] }
                                    value={values[ix]}
-                                   onClick={(event => handleChangeHook(value, valueSetter, id, event))}
                                    onChange={(event => handleChangeHook(value, valueSetter, id, event))}
                             />
                             <label htmlFor={`${id}_${o}`}>{o}</label>

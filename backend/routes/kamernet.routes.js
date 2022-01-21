@@ -19,7 +19,11 @@ module.exports = (app) => {
   router.get('/:param?', nrp_control.param_find);
   router.put('/id/:id', nrp_control.id_update);
   router.delete('/id/:id', nrp_control.id_delete);
+
   router.get('/search/filter', nrp_control.search);
+  router.delete('/search/filter', nrp_control.delete);
+  router.put('/search/filter', nrp_control.update);
+
   router.get('/location', nrp_control.lat_long_find);
   router.delete('/location', nrp_control.lat_long_delete);
   router.put('/location', nrp_control.lat_long_update);

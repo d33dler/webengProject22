@@ -1,5 +1,5 @@
 import React, {Component, useEffect, useState} from "react";
-import ArticleService from '../services/article.service'
+import ArticleService from '../services/backend.routes'
 import DisplayEntry from "./comp.display_entry";
 import {fieldSet} from "./fields_stats";
 import {renderField, renderRadio, newState, handleChange, handleCheckHook, stateful} from "./helper_fun";

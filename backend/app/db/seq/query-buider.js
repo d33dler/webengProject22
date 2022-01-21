@@ -1,8 +1,8 @@
 const { Op } = require('sequelize');
+const { isUndefined, isEmpty } = require('lodash');
 const { queryOp } = require('./query-operators');
 
 const { fieldMap } = require('../fieldSets/fields_search');
-const {isUndefined} = require("lodash");
 
 function loop(arr, instruction, op, _exec) {
     for (let i = 0; i < arr.length; i++) {
@@ -24,7 +24,7 @@ const config = {
     order: (instruction, args) => {
         const { param, argArr } = args;
         instruction.order = [];
-        if(!isUndefined(argArr[0]) && !isUndefined(argArr[1])){
+        if (!isUndefined(argArr[0]) && !isUndefined(argArr[1])){
             instruction.order.push([`${argArr[0]}`, argArr[1]]);
         }
     },
@@ -50,22 +50,26 @@ const queryBuilder = (options) => {
 
 exports.createQuery = (query) => {
     const options = [];
-    const keys = Object.keys(query);
     console.log(fieldMap);
-
-    Object.entries(query).forEach(([key, value]) => {
-        let argArr = [];
-        const field = fieldMap.get(key);
-        if (Array.isArray(value)) argArr = value; else argArr.push(value);
-        console.log(field);
-        options.push({
-            sqlOp: `${field.sqlOp}`,
-            param: field.tid,
-            operator: `${field.op}`,
-            argArr,
+    if (isUndefined(query)) {
+        return { where: {} };
+    }
+        Object.entries(query).forEach(([key, value]) => {
+            let out = value;
+            let argArr = [];
+            const field = fieldMap.get(key);
+            if (out === 'true' || out === 'false') out = (value === 'true');
+            if (Array.isArray(value)) argArr = out; else argArr.push(out);
+            console.log(field);
+            options.push({
+                sqlOp: `${field.sqlOp}`,
+                param: field.tid,
+                operator: `${field.op}`,
+                argArr,
+            });
         });
-    });
-    const out = queryBuilder(options);
-    console.log(out);
-    return queryBuilder(options);
+
+        const out = queryBuilder(options);
+        if (isUndefined(out.where)) out.where = {};
+        return queryBuilder(options);
 };

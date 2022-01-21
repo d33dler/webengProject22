@@ -1,7 +1,7 @@
 import _ from 'lodash';
 import axios from '../http-common';
 
-class ArticleService {
+class BackendRoutes {
   getById(id) {
     return axios.get(`articles/id/${id}`);
   }
@@ -18,6 +18,19 @@ class ArticleService {
       params: filter_options
     })
   }
+  filterDelete(filter_options) {
+    return axios.delete(`articles/search/filter`, {
+      params: filter_options
+    })
+  }
+  filterUpdate(filter_options) {
+    return axios.put(`articles/search/filter`, filter_options.fields,
+        {
+      params: filter_options.conditions
+    })
+  }
+
+
   create(data) {
     return axios.post('articles/new', data); // test this ?
   }
@@ -86,4 +99,4 @@ class ArticleService {
 }
 
 
-export default new ArticleService();
+export default new BackendRoutes();

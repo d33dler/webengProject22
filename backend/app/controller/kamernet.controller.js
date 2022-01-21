@@ -14,7 +14,7 @@ require('sequelize-values')(Sequelize);
 const propAttributes = (req) => {
     const attrs = {};
     Object.entries(req.body).forEach(([key, value]) => {
-    attrs[key] = value;
+        attrs[key] = value;
     });
     return attrs;
 };
@@ -36,10 +36,56 @@ exports.trylogin = (req, res) => {
     res.status(200).send('Server is online');
 };
 
+exports.update = (req, res) => {
+    const conditions = createQuery(req.query);
+    const fields = req.body;
+    try {
+        db.Properties.update(fields, conditions).then((r) => {
+            res.status(200).send(r);
+        }).catch((err) => {
+            res.status(204).send({
+                message:
+                    err.message || 'An error occurred while updating articles.',
+            });
+        });
+    } catch (err) {
+        res.status(500).send({
+            message:
+                err.message || 'Internal server error.',
+        });
+    }
+
+};
+
+exports.delete = (req, res) => {
+    const conditions = createQuery(req.query);
+    try {
+        db.Properties.destroy(conditions).then((r) => {
+            res.status(200).send(r);
+        }).catch((err) => {
+            res.status(204).send({
+                message:
+                    err.message || 'An error occurred while retrieving article.',
+            });
+        });
+    } catch (e) {
+        res.status(500).send({
+            message:
+                e.message || 'Internal server error.',
+        });
+    }
+};
+
 exports.search = (req, res) => {
     const conditions = createQuery(req.query);
+    console.log(req.query);
     db.Properties.findAll(conditions).then((r) => {
         res.status(200).send(r);
+    }).catch((err) => {
+        res.status(500).send({
+            message:
+                err.message || 'An error occurred while retrieving article.',
+        });
     });
 };
 
@@ -321,7 +367,7 @@ async function addAllLocalResults(resultSet, response) {
 
 async function get_stats(seq, query, city) {
     let response;
-   
+
     const attr = collectAttributes(seq, query);
     await executeLocalFunctions(query).then(async (local_res) => {
         await db.Properties.findAll({
