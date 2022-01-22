@@ -1,9 +1,10 @@
 module.exports = {
-    host: 'localhost',
-    user: 'doodler',
-    password: 'bradubradu',
-    kamernetDb: 'kamernet_db',
-    citiesDb: 'cities_kn_db',
+    host: process.env.DB_HOST,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    KAMERNET_DB: process.env.DB_NAME_1,
+    CITIES_DB: process.env.DB_NAME_2,
+    port: process.env.DB_PORT,
     dialect: 'mysql',
     pool: {
         max: 5,

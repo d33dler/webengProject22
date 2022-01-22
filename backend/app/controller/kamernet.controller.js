@@ -1,7 +1,7 @@
 const { Op, Sequelize } = require('sequelize');
 const medianAverage = require('median-average');
 const converter = require('json-2-csv');
-const db = require('../db/seq');
+const db = require('../db/seq/database_setup');
 const { seqFunctionMapping, localFunctionMapping } = require('../db/seq/functionSet');
 const { queryOp } = require('../db/seq/query-operators');
 const { createQuery } = require('../db/seq/query-buider');

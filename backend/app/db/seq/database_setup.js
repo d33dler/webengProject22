@@ -1,5 +1,5 @@
 const dbConfig = require('../db.config');
-const { Sequelize, ARRAY} = require('sequelize');
+const { Sequelize, ARRAY } = require('sequelize');
 const mysql = require('mysql2/promise');
 const fs = require('fs');
 
@@ -7,7 +7,7 @@ const db = {};
 const ProgressBar = require('progress');
 
 const db_parameters = {
-    host: process.env.PSQL_HOST || dbConfig.host,
+    host: dbConfig.host,
     dialect: dbConfig.dialect,
     pool: {
         max: dbConfig.pool.max,
@@ -21,24 +21,24 @@ initialize();
 
 async function initialize() {
     const {
-        host, port, user, password, kamernetDb, citiesDb,
+        host, port, user, password, KAMERNET_DB, CITIES_DB,
     } = dbConfig;
     const connection = await mysql.createConnection({
         host, port, user, password,
     });
     // eslint-disable-next-line camelcase
-    const seqPropertiesDb = new Sequelize(dbConfig.kamernetDb, dbConfig.user, dbConfig.password, db_parameters);
-    const seqCitiesDb = new Sequelize(dbConfig.citiesDb, dbConfig.user, dbConfig.password, db_parameters);
+    const seqPropertiesDb = new Sequelize(dbConfig.KAMERNET_DB, dbConfig.user, dbConfig.password, db_parameters);
+    const seqCitiesDb = new Sequelize(dbConfig.CITIES_DB, dbConfig.user, dbConfig.password, db_parameters);
     db.Sequelize = Sequelize;
     db.sequelizeProperties = seqPropertiesDb;
     db.sequelizeCities = seqCitiesDb;
     db.Properties = require('./kamernet.model.js')(seqPropertiesDb, Sequelize);
     db.Cities = require('./cities.model.js')(seqCitiesDb, Sequelize);
-    db.Properties.findAll({where: {}}).then((res) => {
+    db.Properties.findAll({ where: {} }).then((res) => {
         if (res.length == 0) {
             collectDataset();
         }
-    })
+    });
     await seqPropertiesDb.sync();
     await seqCitiesDb.sync();
 }
@@ -80,14 +80,14 @@ async function populateDb(jsonArr) {
             latitude: jsonArr[i].latitude,
             longitude: jsonArr[i].longitude,
         });
-        cities.push({city: jsonArr[i].city});
+        cities.push({ city: jsonArr[i].city });
         bar.tick();
     }
     console.log('\n');
     db.sequelizeProperties.options.logging = false;
     db.sequelizeCities.options.logging = false;
-    await db.Properties.bulkCreate(kamernetRecords, {ignoreDuplicates: true});
-    await db.Cities.bulkCreate(cities, {ignoreDuplicates: true});
+    await db.Properties.bulkCreate(kamernetRecords, { ignoreDuplicates: true });
+    await db.Cities.bulkCreate(cities, { ignoreDuplicates: true });
     db.sequelizeProperties.options.logging = console.log;
     console.log('Finished loading database!');
 }

@@ -5,14 +5,16 @@ const app = express();
 const bodyParser = require('body-parser');
 const axios = require('axios');
 
-const nodemon = require('nodemon');
-const ngrok = require('ngrok');
+require('dotenv').config();
+
+require('nodemon');
+require('ngrok');
 
 const corsSettings = {
-    origin: ['http://localhost:*', 'http://192.168.178.11:3000', 'http://localhost:3000'],
+    origin: process.env.CLIENT_ORIGIN
+        || ['http://localhost:*', 'http://192.168.178.11:3000', 'http://localhost:3000'],
 };
 app.use(cors(corsSettings));
-
 
 // parse requests of content-type - application/json
 app.use(express.json());
@@ -21,7 +23,7 @@ app.use(express.urlencoded({ extended: true }));
 require('./routes/kamernet.routes')(app);
 
 // set port, listen for requests
-const PORT = process.env.PORT || 8090;
+const PORT = process.env.DOCKER_PORT || 8090;
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}.`);
 });
