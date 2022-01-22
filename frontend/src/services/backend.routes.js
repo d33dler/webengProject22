@@ -19,12 +19,13 @@ class BackendRoutes {
     })
   }
   filterDelete(filter_options) {
+    console.log(filter_options);
     return axios.delete(`articles/search/filter`, {
       params: filter_options
     })
   }
   filterUpdate(filter_options) {
-    return axios.put(`articles/search/filter`, filter_options.fields,
+    return axios.patch(`articles/search/filter`, filter_options.fields,
         {
       params: filter_options.conditions
     })

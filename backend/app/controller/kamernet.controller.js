@@ -59,8 +59,10 @@ exports.update = (req, res) => {
 
 exports.delete = (req, res) => {
     const conditions = createQuery(req.query);
+    console.log(req.query);
     try {
         db.Properties.destroy(conditions).then((r) => {
+            console.log(r);
             res.status(200).send(r);
         }).catch((err) => {
             res.status(204).send({

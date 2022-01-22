@@ -4,14 +4,15 @@ const cors = require('cors');
 const app = express();
 const bodyParser = require('body-parser');
 const axios = require('axios');
+
 const nodemon = require('nodemon');
 const ngrok = require('ngrok');
 
 const corsSettings = {
-    origin: ['http://localhost', 'http://192.168.178.11', 'http://localhost:8085', 'http://localhost:3000'],
+    origin: ['http://localhost:*', 'http://192.168.178.11:3000', 'http://localhost:3000'],
 };
 app.use(cors(corsSettings));
-// app.use(cors(corsSettings));
+
 
 // parse requests of content-type - application/json
 app.use(express.json());

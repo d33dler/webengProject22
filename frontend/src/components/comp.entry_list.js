@@ -54,12 +54,12 @@ const SearchArticle = (props) => {
                 .catch(e => {
                     console.log(e);
                 });
-            resetStateParam("searched", true)
+            appendNewValue("searched", true)
         }
-
     }
 
     useEffect(() => {
+        console.log("USED EFFECT");
         all_fields.forEach((obj) => {
             const param = searchParams.get(`${obj.id}`);
             if (!isNull(param)) {
@@ -70,7 +70,7 @@ const SearchArticle = (props) => {
         });
         setInputs(inputs);
         retrieveEntries();
-    })
+    }, [])
 
     function _selfTriggerRedirect() {
         const p = new URLSearchParams();
@@ -101,6 +101,7 @@ const SearchArticle = (props) => {
 
 
     function refreshList() {
+        setEntries([]);
         setCurrentEntry(null);
         setIndex(-1);
     }
@@ -111,31 +112,19 @@ const SearchArticle = (props) => {
     }
 
     function deleteSelectedEntry() {
-        refreshList();
-        ArticleService.filterDelete({externalId: currentEntry.externalId})
-            .then(response => {
-                let data;
-                if (response.status === 500) {
-                    window.alert("0 entries deleted");
-                } else {
-                    data = response.data;
-                    window.alert("Delete query accepted rows! Filter properties used\n" +
-                        JSON.stringify(inputs, null, 2));
-                }
-                console.log(response.data);
-            })
-            .catch(e => {
-                console.log(e);
-            });
+        sendRequest(ArticleService.filterDelete, {externalId: currentEntry.externalId},
+            "Delete query accepted rows! Filter properties used\n", "0 entries deleted")
+            .then(() => {
+                setEntries([]);
+                refreshList(); })
     }
 
     function getSoloUpdateForm() {
-        setEntries([currentEntry])
-        resetStateParam("singleUpdate", true);
+        setEntries([currentEntry]);
+        appendNewValue("singleUpdate", true);
     }
 
     function updateSelectedEntry() {
-        refreshList();
         const updateQuery = {
             conditions: {externalId: currentEntry.externalId},
             fields: soloUpdate
@@ -143,42 +132,52 @@ const SearchArticle = (props) => {
         sendRequest(ArticleService.filterUpdate,
             updateQuery,
             "Article patch sent! Filter properties used\n" +
-            JSON.stringify(inputs, null, 2), "500 Internal server error");
+            JSON.stringify(inputs, null, 2), "500 Internal server error").then((r) => {
+                if (!isNull(r)) {
+                    setCurrentEntry(prev => ({...prev, ...soloUpdate}))
+                }
+            }
+        );
     }
 
     function deleteAllEntries() {
-        refreshList();
         const parsed = parseInputs()
-        sendRequest(ArticleService.filterDelete,
+        sendRequest(ArticleService.filterDelete, parsed,
             "Delete query sent! Filter properties used\n" +
-            JSON.stringify(inputs, null, 2), "500 Internal server error");
+            JSON.stringify(inputs, null, 2), "500 Internal server error").then(() => {
+            refreshList();
+        });
     }
 
     function updateAllEntries() {
-        refreshList()
+
         const parsed = parseInputs()
         const updateQuery = {
             conditions: parsed,
             fields: bulkUpdate
         }
-        const res = sendRequest(ArticleService.filterUpdate, updateQuery,
+        sendRequest(ArticleService.filterUpdate, updateQuery,
             "Article patch sent! Filter properties used\n" +
             JSON.stringify(inputs, null, 2),
-            "500 Internal server error" );
-        if(!isNull(res)) {
-            window.alert("Server says:\nUpdated " + res.data + " rows! <3")
-        }
+            "500 Internal server error").then(r => {
+            if (!isUndefined(r)) {
+                window.alert("Server says:\nUpdated " + r.data + " rows! <3")
+                refreshList();
+            }
+        });
+
     }
 
-    function sendRequest(_request,parsed, msg200, msg500,) {
-       return _request(parsed)
+    async function sendRequest(_request, parsed, msg200, msg500,) {
+        return await _request(parsed)
             .then(response => {
                 if (response.status === 500) {
                     window.alert(msg500);
+                    return null;
                 } else {
                     window.alert(msg200);
+                    return response;
                 }
-                return response;
             })
             .catch(e => {
                 console.log(e);
@@ -194,7 +193,7 @@ const SearchArticle = (props) => {
         }))
     }
 
-    function resetStateParam(param, value) {
+    function appendNewValue(param, value) {
         setState(prevState => ({
             ...prevState,
             [param]: value
@@ -213,14 +212,16 @@ const SearchArticle = (props) => {
                 {generateButton("Update all", () => {
                     refreshList();
                     setEntries([]);
-                    resetStateParam('update', true)
+                    appendNewValue('update', true)
                 })}
                 {generateButton("Delete all", deleteAllEntries)}
                 {state.update ? <form className="col-md-8">
                     {generateForm(creationFields, bulkUpdate, setBulkUpdate)}
-                    {generateButton("Update", updateAllEntries)}
+                    {generateButton("Update", () => {
+                        updateAllEntries();
+                        _selfTriggerRedirect();
+                    })}
                 </form> : null}
-                {state.queryUpdate ? <div> {generateDialogue("TEST")} </div> : null}
             </div>
         </div>
         <div className="col-md-6">
@@ -255,7 +256,7 @@ const SearchArticle = (props) => {
                 <div>
                     {state.singleUpdate ?
                         <div>{generateForm(creationFields, soloUpdate, setSoloUpdate)}
-                            {generateButton("PATCH",updateSelectedEntry)}</div>: null}
+                            {generateButton("PATCH", updateSelectedEntry)}</div> : null}
                 </div>
             </div> : <div>
                 <br/>
