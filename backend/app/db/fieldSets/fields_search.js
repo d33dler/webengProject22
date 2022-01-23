@@ -18,6 +18,18 @@ const fields_search = [
         op: 'lte',
     },
     {
+        id: 'areaSqm_min',
+        tid: 'areaSqm',
+        sqlOp: 'where',
+        op: 'gte',
+    },
+    {
+        id: 'areaSqm_max',
+        tid: 'areaSqm',
+        sqlOp: 'where',
+        op: 'lte',
+    },
+    {
         id: 'address',
         tid: 'address',
         sqlOp: 'where',

@@ -11,8 +11,8 @@ require('nodemon');
 require('ngrok');
 
 const corsSettings = {
-    origin: process.env.CLIENT_ORIGIN
-        || ['http://localhost:*', 'http://192.168.178.11:3000', 'http://localhost:3000'],
+    "origin": "*",
+    "methods": "GET,HEAD,PUT,PATCH,POST,DELETE",
 };
 app.use(cors(corsSettings));
 

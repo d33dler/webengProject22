@@ -58,15 +58,17 @@ exports.createQuery = (query) => {
             let out = value;
             let argArr = [];
             const field = fieldMap.get(key);
-            if (out === 'true' || out === 'false') out = (value === 'true');
-            if (Array.isArray(value)) argArr = out; else argArr.push(out);
-            console.log(field);
-            options.push({
-                sqlOp: `${field.sqlOp}`,
-                param: field.tid,
-                operator: `${field.op}`,
-                argArr,
-            });
+            if (!isUndefined(field)){
+                if (out === 'true' || out === 'false') out = (value === 'true');
+                if (Array.isArray(value)) argArr = out; else argArr.push(out);
+                console.log(field);
+                options.push({
+                    sqlOp: `${field.sqlOp}`,
+                    param: field.tid,
+                    operator: `${field.op}`,
+                    argArr,
+                });
+            }
         });
 
         const out = queryBuilder(options);

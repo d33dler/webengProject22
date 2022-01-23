@@ -10,7 +10,7 @@ export const fields_search = [
     {
         id: 'rent',
         type: 'range',
-        name: 'rent',
+        name: 'Rent',
         placeholder: 'rent',
         sqlOp: ['gte', 'lte'],
         op: 'like',
@@ -42,7 +42,7 @@ export const fields_search = [
     {
         name: 'Area (m2)',
         id: 'areaSqm',
-        type: 'text',
+        type: 'range',
         placeholder: 'ID',
         sqlOp: 'where',
         op: 'eq',
@@ -100,6 +100,8 @@ export const all_fields =
     [
         {id: 'externalId'},
         {id: 'rent'},
+        {id: 'areaSqm_min'},
+        {id: 'areaSqm_max'},
         {id: 'deposit_min'},
         {id: 'deposit_max'},
         {id: 'isRoomActive'},

@@ -3,7 +3,7 @@
  */
 
 import React from "react";
-import {checkboxParams, textFieldParams} from "./params_field_types";
+import {checkboxParams, rangeParams, textFieldParams} from "./params_field_types";
 import {isUndefined} from "lodash";
 
 /**
@@ -65,7 +65,7 @@ export function renderField(params, id, fieldName, onChange, defaultValue = "") 
     return (
         <div className="form-group">
             <label style={{marginRight: params.marginRight}} id={fieldName} htmlFor={id}>{fieldName}</label>
-            <input type={params.type}
+            <input type={params.type === "range" ? "number" : params.type}
                    id={id}
                    defaultValue={defaultValue}
                    onChange={onChange}/>
@@ -128,12 +128,12 @@ export function renderRangeInput(id, value, valueSetter, label, defaultValues = 
             <div className="d-flex align-items-center mt-sm-1 pb-1">
                 <div className="md-form md-outline my-0">
                     {
-                        renderField(textFieldParams, id_min, label + ' min',
+                        renderField(rangeParams, id_min, label + ' min',
                             (event => handleChangeHook(value, valueSetter, id_min, event)), defaultValues.get(id_min))}
                 </div>
                 <div className="md-form md-outline my-0">
                     {
-                        renderField(textFieldParams, id_max, label + ' max',
+                        renderField(rangeParams, id_max, label + ' max',
                             (event => handleChangeHook(value, valueSetter, id_max, event)), defaultValues.get(id_max))}
                 </div>
             </div>

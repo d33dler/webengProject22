@@ -1,5 +1,5 @@
 const dbConfig = require('../db.config');
-const { Sequelize, ARRAY } = require('sequelize');
+const {Sequelize, ARRAY} = require('sequelize');
 const mysql = require('mysql2/promise');
 const fs = require('fs');
 
@@ -20,29 +20,35 @@ const db_parameters = {
 initialize();
 
 async function initialize() {
-    const {
-        host, port, user, password, KAMERNET_DB, CITIES_DB,
-    } = dbConfig;
-    const connection = await mysql.createConnection({
-        host, port, user, password,
-    });
-    // eslint-disable-next-line camelcase
-    await connection.query(`CREATE DATABASE IF NOT EXISTS \`${KAMERNET_DB}\`;`);
-    await connection.query(`CREATE DATABASE IF NOT EXISTS \`${CITIES_DB}\`;`);
-    const seqPropertiesDb = new Sequelize(dbConfig.KAMERNET_DB, dbConfig.user, dbConfig.password, db_parameters);
-    const seqCitiesDb = new Sequelize(dbConfig.CITIES_DB, dbConfig.user, dbConfig.password, db_parameters);
-    db.Sequelize = Sequelize;
-    db.sequelizeProperties = seqPropertiesDb;
-    db.sequelizeCities = seqCitiesDb;
-    db.Properties = require('./kamernet.model.js')(seqPropertiesDb, Sequelize);
-    db.Cities = require('./cities.model.js')(seqCitiesDb, Sequelize);
-    db.Properties.findAll({ where: {} }).then((res) => {
-        if (res.length == 0) {
-            collectDataset();
-        }
-    });
-    await seqPropertiesDb.sync();
-    await seqCitiesDb.sync();
+    let connected = false;
+
+
+    try {
+        const {
+            host, port, user, password, KAMERNET_DB, CITIES_DB,
+        } = dbConfig;
+        const connection = await mysql.createConnection({
+            host, port, user, password,
+        });
+        // eslint-disable-next-line camelcase
+        await connection.query(`CREATE DATABASE IF NOT EXISTS \`${KAMERNET_DB}\`;`).then(() => {
+            connection.query(`CREATE DATABASE IF NOT EXISTS \`${CITIES_DB}\`;`).then(async () => {
+                const seqPropertiesDb = new Sequelize(dbConfig.KAMERNET_DB, dbConfig.user, dbConfig.password, db_parameters);
+                const seqCitiesDb = new Sequelize(dbConfig.CITIES_DB, dbConfig.user, dbConfig.password, db_parameters);
+                db.Sequelize = Sequelize;
+                db.sequelizeProperties = seqPropertiesDb;
+                db.sequelizeCities = seqCitiesDb;
+                db.Properties = require('./kamernet.model.js')(seqPropertiesDb, Sequelize);
+                db.Cities = require('./cities.model.js')(seqCitiesDb, Sequelize);
+                collectDataset();
+                await seqPropertiesDb.sync();
+                await seqCitiesDb.sync();
+            });
+        });
+    } catch (e) {
+        console.log(e);
+    }
+
 }
 
 function collectDataset() {
@@ -56,8 +62,10 @@ function collectDataset() {
             populateDb(properties);
         } catch (err) {
             console.log('Error parsing JSON string:', err);
+            return false;
         }
     });
+    return true;
 }
 
 async function populateDb(jsonArr) {
@@ -82,14 +90,14 @@ async function populateDb(jsonArr) {
             latitude: jsonArr[i].latitude,
             longitude: jsonArr[i].longitude,
         });
-        cities.push({ city: jsonArr[i].city });
+        cities.push({city: jsonArr[i].city});
         bar.tick();
     }
     console.log('\n');
     db.sequelizeProperties.options.logging = false;
     db.sequelizeCities.options.logging = false;
-    await db.Properties.bulkCreate(kamernetRecords, { ignoreDuplicates: true });
-    await db.Cities.bulkCreate(cities, { ignoreDuplicates: true });
+    await db.Properties.bulkCreate(kamernetRecords, {ignoreDuplicates: true});
+    await db.Cities.bulkCreate(cities, {ignoreDuplicates: true});
     db.sequelizeProperties.options.logging = console.log;
     console.log('Finished loading database!');
 }
