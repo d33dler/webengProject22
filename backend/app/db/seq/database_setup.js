@@ -27,6 +27,8 @@ async function initialize() {
         host, port, user, password,
     });
     // eslint-disable-next-line camelcase
+    await connection.query(`CREATE DATABASE IF NOT EXISTS \`${KAMERNET_DB}\`;`);
+    await connection.query(`CREATE DATABASE IF NOT EXISTS \`${CITIES_DB}\`;`);
     const seqPropertiesDb = new Sequelize(dbConfig.KAMERNET_DB, dbConfig.user, dbConfig.password, db_parameters);
     const seqCitiesDb = new Sequelize(dbConfig.CITIES_DB, dbConfig.user, dbConfig.password, db_parameters);
     db.Sequelize = Sequelize;

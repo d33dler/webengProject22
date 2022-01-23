@@ -1,10 +1,10 @@
 {
-  "name": "we-kamer-proj",
+  "name": "backend",
   "version": "0.0.0",
-  "private": true,
+  "private": false,
   "scripts": {
     "server": "nodemon --delay 500ms server.js",
-    "build": "--delay 500ms server.js",
+    "server_script": "server.js",
     "frontend": "cd ../frontend && npm start",
     "dev": "concurrently \"npm run server\" \"npm run frontend\""
   },
@@ -39,7 +39,11 @@
     "sequelize-cli": "^6.3.0",
     "sequelize-values": "^1.1.0",
     "underscore": "^1.13.1",
-    "uuid": "^8.3.2"
+    "uuid": "^8.3.2",
+    "eslint": "^8.4.0",
+    "eslint-config-airbnb-base": "^15.0.0",
+    "eslint-plugin-import": "^2.25.3"
+
   },
   "devDependencies": {
     "eslint": "^8.4.0",
