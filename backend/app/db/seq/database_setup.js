@@ -22,33 +22,38 @@ initialize();
 async function initialize() {
     let connected = false;
 
-
-    try {
-        const {
-            host, port, user, password, KAMERNET_DB, CITIES_DB,
-        } = dbConfig;
-        const connection = await mysql.createConnection({
-            host, port, user, password,
-        });
-        // eslint-disable-next-line camelcase
-        await connection.query(`CREATE DATABASE IF NOT EXISTS \`${KAMERNET_DB}\`;`).then(() => {
-            connection.query(`CREATE DATABASE IF NOT EXISTS \`${CITIES_DB}\`;`).then(async () => {
-                const seqPropertiesDb = new Sequelize(dbConfig.KAMERNET_DB, dbConfig.user, dbConfig.password, db_parameters);
-                const seqCitiesDb = new Sequelize(dbConfig.CITIES_DB, dbConfig.user, dbConfig.password, db_parameters);
-                db.Sequelize = Sequelize;
-                db.sequelizeProperties = seqPropertiesDb;
-                db.sequelizeCities = seqCitiesDb;
-                db.Properties = require('./kamernet.model.js')(seqPropertiesDb, Sequelize);
-                db.Cities = require('./cities.model.js')(seqCitiesDb, Sequelize);
-                collectDataset();
-                await seqPropertiesDb.sync();
-                await seqCitiesDb.sync();
+    while(!connected){
+        console.log("Attempting connection to MySQL host");
+        try {
+            const {
+                host, port, user, password, KAMERNET_DB, CITIES_DB,
+            } = dbConfig;
+            const connection = await mysql.createConnection({
+                host, port, user, password,
             });
-        });
-    } catch (e) {
-        console.log(e);
+            if(connection!==undefined) {
+                connected = true;
+                console.log("MySQL HAS RESPONDED")
+            }
+            // eslint-disable-next-line camelcase
+            await connection.query(`CREATE DATABASE IF NOT EXISTS \`${KAMERNET_DB}\`;`).then(() => {
+                connection.query(`CREATE DATABASE IF NOT EXISTS \`${CITIES_DB}\`;`).then(async () => {
+                    const seqPropertiesDb = new Sequelize(dbConfig.KAMERNET_DB, dbConfig.user, dbConfig.password, db_parameters);
+                    const seqCitiesDb = new Sequelize(dbConfig.CITIES_DB, dbConfig.user, dbConfig.password, db_parameters);
+                    db.Sequelize = Sequelize;
+                    db.sequelizeProperties = seqPropertiesDb;
+                    db.sequelizeCities = seqCitiesDb;
+                    db.Properties = require('./kamernet.model.js')(seqPropertiesDb, Sequelize);
+                    db.Cities = require('./cities.model.js')(seqCitiesDb, Sequelize);
+                    collectDataset();
+                    await seqPropertiesDb.sync();
+                    await seqCitiesDb.sync();
+                });
+            });
+        } catch (e) {
+            console.log(e);
+        }
     }
-
 }
 
 function collectDataset() {
