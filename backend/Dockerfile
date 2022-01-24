@@ -7,4 +7,4 @@ RUN npm install
 RUN apt-get -q update && apt-get -qy install netcat
 COPY . .
 
-ENTRYPOINT ["node","server.js"]
+#ENTRYPOINT ["node","server.js"]
