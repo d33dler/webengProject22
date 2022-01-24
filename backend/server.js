@@ -24,6 +24,7 @@ require('./routes/kamernet.routes')(app);
 
 // set port, listen for requests
 const PORT = process.env.DOCKER_PORT || 8090;
-app.listen(PORT, () => {
+const HOST = process.env.HOST || "localhost"
+app.listen(PORT, HOST, () => {
     console.log(`Server is running on port ${PORT}.`);
 });

@@ -18,7 +18,6 @@ services:
   backend:
     depends_on:
       - mysqldb
-    command: ["sh","./wait-for","mysqldb:3306","--","node","server.js"]
     build:
        context: ./backend
     restart: unless-stopped
