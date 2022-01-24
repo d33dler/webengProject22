@@ -18,6 +18,7 @@ services:
   backend:
     depends_on:
       - mysqldb
+    command: ["./wait-for.sh", "mysqldb:3306", "-s", "--","echo","NRPP IS UP!"]
     build:
        context: ./backend
     restart: unless-stopped
