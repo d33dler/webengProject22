@@ -14,7 +14,7 @@ ENV REACT_APP_API_BASE_URL=$REACT_APP_API_BASE_URL
 
 EXPOSE 3000
 
-CMD [ "npm", "start" ]
+CMD [ "npm","run", "build" ]
 
 
 # Stage 2

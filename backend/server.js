@@ -9,6 +9,7 @@ require('dotenv').config();
 
 require('nodemon');
 require('ngrok');
+const path = require("path");
 
 const corsSettings = {
     "origin": "*",
@@ -19,6 +20,9 @@ app.use(cors(corsSettings));
 // parse requests of content-type - application/json
 app.use(express.json());
 // parse requests of content-type - application/x-www-form-urlencoded
+
+app.use(express.static(path.join(__dirname, 'frontend_build')));
+
 app.use(express.urlencoded({ extended: true }));
 require('./routes/kamernet.routes')(app);
 

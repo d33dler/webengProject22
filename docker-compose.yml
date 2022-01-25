@@ -16,6 +16,7 @@ services:
     restart: always
 
   backend:
+    tty: true
     depends_on:
       - mysqldb
     build:
@@ -29,17 +30,6 @@ services:
       - CLIENT_ORIGIN=$CLIENT_ORIGIN
     links:
       - mysqldb
-
-  frontend:
-    depends_on:
-      - backend
-    build:
-      context: ./frontend
-      args:
-        - REACT_APP_API_BASE_URL=$CLIENT_API_BASE_URL
-    ports:
-      - $REACT_LOCAL_PORT:$REACT_DOCKER_PORT
-    stdin_open: true
 
 volumes:
   db:

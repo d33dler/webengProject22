@@ -8,6 +8,7 @@
     "frontend": "cd ../frontend && npm start",
     "dev": "concurrently \"npm run server\" \"npm run frontend\""
   },
+  "homepage": ".",
   "keywords": [
     "nodejs",
     "express",
