@@ -1,10 +1,10 @@
-import React, {useState} from "react";
-import ArticleService from '../../services/backend.routes'
-import DisplayEntry from "./comp.entry_display";
-import {statFieldSet} from "../configs/fields_stats";
-import {renderField, handleCheckHook, stateful} from "../../func_bin/helper_fun";
-import {useParams} from "react-router-dom";
-import {checkboxParams} from "../configs/params_field_types";
+import React, {Component, useEffect, useState} from "react";
+import ArticleService from '../services/backend.routes'
+import DisplayEntry from "./comp.display_entry";
+import {fieldSet} from "./fields_stats";
+import {renderField, renderRadio, newState, handleChange, handleCheckHook, stateful} from "./helper_fun";
+import {Link, useParams, useRouteMatch, withRouter} from "react-router-dom";
+import {checkboxParams, textFieldParams} from "./params_field_types";
 import {toJSON} from "lodash/seq";
 
 
@@ -12,7 +12,17 @@ const Statistics = () => {
     const {city} = useParams();
     const [submitted, setSubmit] = useState(false);
     const [data, setData] = useState({});
-    const [body, setBody] = useState(stateful(statFieldSet, false));
+    const [body, setBody] = useState(stateful(fieldSet, false));
+
+
+
+
+    function prepareParams() {
+        fieldSet.map((field, ix) => {
+            const {id, fun, col} = field
+        })
+    }
+
     function retrieveStats() {
         console.log(body)
         ArticleService.getStatistics(city, body)
@@ -32,12 +42,11 @@ const Statistics = () => {
                 (<DisplayEntry data={data}/>)
                 : (
                     <div>
-                        {statFieldSet.map((field) => {
-                            const {id, type} = field
+                        {fieldSet.map((field) => {
+                            const {name, id, type} = field
                             switch (type) {
                                 case 'checkbox':
-                                    return (renderField(checkboxParams, field,
-                                        (event => handleCheckHook(body, setBody, id, event))));
+                                    return (renderField(checkboxParams, id, name, (event => handleCheckHook(body, setBody, id, event))));
                                 default:
                                     return null;
                             }

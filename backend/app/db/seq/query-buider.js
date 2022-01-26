@@ -13,11 +13,11 @@ function loop(arr, instruction, op, _exec) {
 const config = {
     where: (instruction, args) => {
         const { param, operator, argArr } = args;
-        if (instruction.where === undefined) {
-            instruction.where = {};
-            instruction.where[Op.and] = [];
-        }
         loop(argArr, instruction, operator, (instr, op, ix) => {
+            if (instruction.where === undefined) {
+                instruction.where = {};
+                instruction.where[Op.and] = [];
+            }
             instruction.where[Op.and].push({ [`${param}`]: { [queryOp[`${op}`]]: argArr[ix] } });
         });
     },
@@ -50,6 +50,7 @@ const queryBuilder = (options) => {
 
 exports.createQuery = (query) => {
     const options = [];
+    console.log(fieldMap);
     if (isUndefined(query)) {
         return { where: {} };
     }
@@ -60,6 +61,7 @@ exports.createQuery = (query) => {
             if (!isUndefined(field)){
                 if (out === 'true' || out === 'false') out = (value === 'true');
                 if (Array.isArray(value)) argArr = out; else argArr.push(out);
+                console.log(field);
                 options.push({
                     sqlOp: `${field.sqlOp}`,
                     param: field.tid,

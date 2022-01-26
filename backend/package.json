@@ -25,13 +25,9 @@
     "cors": "^2.8.5",
     "debug": "~2.6.9",
     "dotenv": "^14.2.0",
-    "eslint": "^8.4.0",
-    "eslint-config-airbnb-base": "^15.0.0",
-    "eslint-plugin-import": "^2.25.3",
     "express": "^4.16.4",
     "http-errors": "~1.6.3",
-    "json-2-csv": "^3.16.1",
-    "json2csv": "^5.0.6",
+    "json-2-csv": "^3.16.0",
     "lodash": "^4.17.21",
     "median-average": "^1.0.1",
     "morgan": "~1.9.1",
@@ -44,7 +40,11 @@
     "sequelize-cli": "^6.3.0",
     "sequelize-values": "^1.1.0",
     "underscore": "^1.13.1",
-    "uuid": "^8.3.2"
+    "uuid": "^8.3.2",
+    "eslint": "^8.4.0",
+    "eslint-config-airbnb-base": "^15.0.0",
+    "eslint-plugin-import": "^2.25.3"
+
   },
   "devDependencies": {
     "eslint": "^8.4.0",
