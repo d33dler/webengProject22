@@ -1,4 +1,4 @@
-export const fieldSet = [
+export const statFieldSet = [
     {
         name: 'City',
         id: 'city',

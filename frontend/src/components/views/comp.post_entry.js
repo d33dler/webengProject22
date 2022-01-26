@@ -1,8 +1,8 @@
-import React, {Component, useState} from 'react';
-import ArticleService from '../services/backend.routes';
-import {creationFields} from './fields_create';
-import DisplayEntry from "./comp.display_entry";
-import {renderField, renderRadio, newState, handleChange, generateForm, generateButton} from "./helper_fun";
+import React, {useState} from 'react';
+import ArticleService from '../../services/backend.routes';
+import {creationFields} from '../configs/fields_create';
+import DisplayEntry from "./comp.entry_display";
+import {generateForm, generateButton} from "../../func_bin/helper_fun";
 
 const PostArticle = () => {
 
@@ -49,25 +49,5 @@ const PostArticle = () => {
 
 }
 
-
-
 export default PostArticle;
 
-/*
-{
-    searchFields.map((field) => { //helperfun abstract out
-        const {
-            name, id, type, options, values
-        } = field;
-        switch (type) {
-            case 'text':
-                return renderField(textFieldParams, id, name, event => handleChange(this, id, event))
-            case 'radio':
-                return (renderRadio(this, id, name, options, values));
-            default:
-                return null;
-        }
-    })
-}
-
- */

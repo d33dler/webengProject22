@@ -4,7 +4,6 @@ module.exports = {
     password: process.env.DB_PASSWORD,
     KAMERNET_DB: process.env.DB_NAME_1,
     CITIES_DB: process.env.DB_NAME_2,
-    port: process.env.DB_PORT,
     dialect: 'mysql',
     pool: {
         max: 5,
@@ -13,3 +12,6 @@ module.exports = {
         idle: 20000,
     },
 };
+
+
+//port: process.env.DB_PORT,
