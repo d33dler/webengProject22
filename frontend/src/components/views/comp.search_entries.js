@@ -10,7 +10,7 @@ import {
 } from "../utils/helper_fun";
 import {useNavigate, useParams} from "@reach/router";
 import {useSearchParams} from 'react-router-dom'
-import {fields_meta, meta_default} from "../configs/fields_meta";
+import {fields_meta, formats, meta_default as formatsmeta, meta_default} from "../configs/fields_meta";
 
 
 const defaultState = {
@@ -20,7 +20,7 @@ const defaultState = {
     queryUpdate: false,
     singleUpdate: false,
     customFormat: true,
-    download: 0
+    download: null
 }
 
 const SearchArticle = (props) => {
@@ -48,6 +48,7 @@ const SearchArticle = (props) => {
         if (res.headers['content-type'].includes('application/json')) {
             setEntries(res.data);
         }
+        updateData(res);
     }
 
     useEffect(() => {
@@ -169,15 +170,26 @@ const SearchArticle = (props) => {
                     return null;
                 } else {
                     window.alert(msg200);
-                    setStateParam('response', response.data);
-                    setStateParam('download', URL.createObjectURL(new Blob([JSON.stringify(state.response)],
-                        {type: meta.Accept})));
+                    updateData(response);
                     return response;
                 }
             })
             .catch(e => {
                 console.log(e);
             });
+    }
+
+    function updateData(res) {
+        let objArr;
+        setStateParam('response', res.data);
+        if (res.headers['content-type'].includes('application/json')) {
+            objArr = JSON.stringify(res.data);
+        } else {
+            objArr = res.data.toString();
+        }
+        setStateParam('download',
+            URL.createObjectURL(new Blob([objArr],
+                {type: meta.Accept})));
     }
 
     function resetState() {
