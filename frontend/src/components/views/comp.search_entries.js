@@ -1,26 +1,26 @@
-import React, {Component, createContext, useContext, useEffect, useState} from "react";
-import ArticleService from '../services/backend.routes'
+import React, {useEffect, useState} from "react";
+import ArticleService from '../../services/backend.routes'
 import DisplayEntry from "./comp.display_entry";
 import _, {isNull, isUndefined} from "lodash";
-import {fields_search, fieldMap, all_fields} from "./fields_search";
-import {creationFields} from "./fields_create";
+import {fields_search, fieldMap, all_fields} from "../configs/fields_search";
+import {creationFields} from "../configs/fields_create";
 import structuredClone from "@ungap/structured-clone"
 import {
-    generateButton, generateDialogue,
-    generateForm,
-} from "./helper_fun";
-
-import {checkboxParams, textFieldParams} from "./params_field_types";
+    generateButton, generateForm,
+} from "../utils/helper_fun";
 import {useNavigate, useParams} from "@reach/router";
 import {useSearchParams} from 'react-router-dom'
+import {fields_meta, meta_default} from "../configs/fields_meta";
 
-const inputGrSm = "input-group input-group-sm mb-3"
 
 const defaultState = {
     update: false,
+    response: {},
     searched: false,
     queryUpdate: false,
     singleUpdate: false,
+    customFormat: true,
+    download: 0
 }
 
 const SearchArticle = (props) => {
@@ -29,37 +29,28 @@ const SearchArticle = (props) => {
     const [currentEntry, setCurrentEntry] = useState(null);
     const [currentIndex, setIndex] = useState(-1);
     const [fieldSet, updateFieldSet] = useState(fields_search);
-    let [inputs, setInputs] = useState({});
     const [bulkUpdate, setBulkUpdate] = useState({});
     const [soloUpdate, setSoloUpdate] = useState({});
+    const [meta, setMetaData] = useState(meta_default);
     let navigate = useNavigate();
+    let [inputs, setInputs] = useState({});
     let [searchParams, setSearchParams] = useSearchParams();
 
     function retrieveEntries() {
-        if (state.searched === false) {
-            refreshList()
-            const parsed = parseInputs()
-            console.log(parsed);
-            ArticleService.filterSearch(parsed)
-                .then(response => {
-                    let data;
-                    if (response.status === 204) {
-                        data = null;
-                    } else {
-                        data = response.data;
-                    }
-                    setEntries(data);
-                    console.log(response.data);
-                })
-                .catch(e => {
-                    console.log(e);
-                });
-            appendNewValue("searched", true)
+        sendRequest(ArticleService.filterSearch, parseInputs(),
+            "Searching completed", "Server error occurred")
+            .then((r) => {
+                if (!isNull(r)) updateEntries(r);
+            });
+    }
+
+    function updateEntries(res) {
+        if (res.headers['content-type'].includes('application/json')) {
+            setEntries(res.data);
         }
     }
 
     useEffect(() => {
-        console.log("USED EFFECT");
         all_fields.forEach((obj) => {
             const param = searchParams.get(`${obj.id}`);
             if (!isNull(param)) {
@@ -116,12 +107,13 @@ const SearchArticle = (props) => {
             "Delete query accepted rows! Filter properties used\n", "0 entries deleted")
             .then(() => {
                 setEntries([]);
-                refreshList(); })
+                refreshList();
+            })
     }
 
     function getSoloUpdateForm() {
         setEntries([currentEntry]);
-        appendNewValue("singleUpdate", true);
+        setStateParam("singleUpdate", true);
     }
 
     function updateSelectedEntry() {
@@ -169,13 +161,17 @@ const SearchArticle = (props) => {
     }
 
     async function sendRequest(_request, parsed, msg200, msg500,) {
-        return await _request(parsed)
+        return await _request(parsed, meta)
             .then(response => {
                 if (response.status === 500) {
                     window.alert(msg500);
+                    setStateParam('response', {});
                     return null;
                 } else {
                     window.alert(msg200);
+                    setStateParam('response', response.data);
+                    setStateParam('download', URL.createObjectURL(new Blob([JSON.stringify(state.response)],
+                        {type: meta.Accept})));
                     return response;
                 }
             })
@@ -193,7 +189,7 @@ const SearchArticle = (props) => {
         }))
     }
 
-    function appendNewValue(param, value) {
+    function setStateParam(param, value) {
         setState(prevState => ({
             ...prevState,
             [param]: value
@@ -202,6 +198,7 @@ const SearchArticle = (props) => {
 
     return <div className="list row">
         <div className="col-md-8">
+            {generateForm(fields_meta, meta, setMetaData)}
             {generateForm(fieldSet, inputs, setInputs, searchParams)}
             <div className="input-group-append">
                 {generateButton("Search", () => {
@@ -212,9 +209,12 @@ const SearchArticle = (props) => {
                 {generateButton("Update all", () => {
                     refreshList();
                     setEntries([]);
-                    appendNewValue('update', true)
+                    setStateParam('update', true)
                 })}
                 {generateButton("Delete all", deleteAllEntries)}
+                {
+                    <a href={state.download} download>Click to download</a>
+                }
                 {state.update ? <form className="col-md-8">
                     {generateForm(creationFields, bulkUpdate, setBulkUpdate)}
                     {generateButton("Update", () => {
@@ -233,7 +233,7 @@ const SearchArticle = (props) => {
                         className={"list-group-item " + (index === currentIndex ? "active" : "")}
                         onClick={() => setSelection(entry, index)}
                         key={index}>
-                        {entry.address + ", " + entry.city}
+                        {entry.title + ", " + entry.city}
                     </li>)}
             </ul>
 
@@ -267,13 +267,3 @@ const SearchArticle = (props) => {
 }
 
 export default SearchArticle;
-/*
-
-    <button
-        className="m-3 btn btn-sm btn-danger"
-        onClick={this.removeEntry}
-    >
-        Remove All
-    </button>
-
-*/

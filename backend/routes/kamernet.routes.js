@@ -14,8 +14,7 @@ module.exports = (app) => {
 
   // Retrieve a single Tutorial with id
   router.get('/', nrp_control.trylogin);
-  router.get('/id/:id', nrp_control.id_find);
-  router.get('/:city?', nrp_control.city_find);
+  router.get('/city/:city?', nrp_control.city_find);
 
   router.get('/search/filter', nrp_control.search);
   router.delete('/search/filter', nrp_control.delete);

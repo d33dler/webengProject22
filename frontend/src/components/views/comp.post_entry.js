@@ -1,8 +1,8 @@
-import React, {Component, useState} from 'react';
-import ArticleService from '../services/backend.routes';
-import {creationFields} from './fields_create';
+import React, {useState} from 'react';
+import ArticleService from '../../services/backend.routes';
+import {creationFields} from '../configs/fields_create';
 import DisplayEntry from "./comp.display_entry";
-import {renderField, renderRadio, newState, handleChange, generateForm, generateButton} from "./helper_fun";
+import { generateForm, generateButton} from "../utils/helper_fun";
 
 const PostArticle = () => {
 

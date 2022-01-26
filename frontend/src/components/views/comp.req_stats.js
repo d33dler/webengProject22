@@ -1,9 +1,9 @@
 import React, {Component} from "react";
-import {fieldSet} from "./fields_stats";
-import {newState, renderField, handleCheckHook, createLabel, handleChange} from "./helper_fun";
+import {fieldSet} from "../configs/fields_stats";
+import {newState, renderField, createLabel, handleChange} from "../utils/helper_fun";
 import {Link, useHistory, useLocation} from "react-router-dom";
-import {checkboxParams, textFieldParams} from "./params_field_types";
-import ArticleService from "../services/backend.routes";
+import {checkboxParams, textFieldParams} from "../configs/params_field_types";
+import ArticleService from "../../services/backend.routes";
 
 
 export default class StatisticForm extends Component {
@@ -56,10 +56,10 @@ export default class StatisticForm extends Component {
         return (
             <div className={"submit-form"}>
                 {fieldSet.map((field) => {
-                    const {name, id, type} = field;
+                    const {id, type} = field;
                     switch (type) {
                         case 'text':
-                            return (renderField(textFieldParams, id, name, (event => handleChange(this, id, event))));
+                            return (renderField(field, textFieldParams, (event => handleChange(this, id, event))));
                         default:
                             return null;
                     }

@@ -1,10 +1,10 @@
 import React, {Component, useEffect, useState} from "react";
-import ArticleService from '../services/backend.routes'
+import ArticleService from '../../services/backend.routes'
 import DisplayEntry from "./comp.display_entry";
-import {fieldSet} from "./fields_stats";
-import {renderField, renderRadio, newState, handleChange, handleCheckHook, stateful} from "./helper_fun";
-import {Link, useParams, useRouteMatch, withRouter} from "react-router-dom";
-import {checkboxParams, textFieldParams} from "./params_field_types";
+import {fieldSet} from "../configs/fields_stats";
+import {renderField, handleCheckHook, stateful} from "../utils/helper_fun";
+import { useParams} from "react-router-dom";
+import {checkboxParams, textFieldParams} from "../configs/params_field_types";
 import {toJSON} from "lodash/seq";
 
 
@@ -43,10 +43,10 @@ const Statistics = () => {
                 : (
                     <div>
                         {fieldSet.map((field) => {
-                            const {name, id, type} = field
+                            const {id, type} = field
                             switch (type) {
                                 case 'checkbox':
-                                    return (renderField(checkboxParams, id, name, (event => handleCheckHook(body, setBody, id, event))));
+                                    return (renderField(field, checkboxParams, (event => handleCheckHook(body, setBody, id, event))));
                                 default:
                                     return null;
                             }

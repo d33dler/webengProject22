@@ -1,7 +1,7 @@
 export const creationFields = [
   {
     name: 'Address',
-    id: 'address',
+    id: 'title',
     type: 'text',
   },
   {

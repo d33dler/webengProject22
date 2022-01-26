@@ -30,8 +30,8 @@ const fields_search = [
         op: 'lte',
     },
     {
-        id: 'address',
-        tid: 'address',
+        id: 'title',
+        tid: 'title',
         sqlOp: 'where',
         op: 'like',
     },

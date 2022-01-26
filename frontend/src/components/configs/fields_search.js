@@ -17,7 +17,7 @@ export const fields_search = [
     },
     {
         name: 'Address',
-        id: 'address',
+        id: 'title',
         type: 'text',
         placeholder: 'ID',
         sqlOp: 'where',
@@ -111,7 +111,7 @@ export const all_fields =
         {id: 'isRoomActive'},
         {id: 'areaSqm'},
         {id: 'city'},
-        {id: 'address'},
+        {id: 'title'},
         {id: 'rent_min'},
         {id: 'rent_max'},
         {id: 'postalCode'}

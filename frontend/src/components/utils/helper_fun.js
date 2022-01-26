@@ -3,7 +3,7 @@
  */
 
 import React from "react";
-import {checkboxParams, rangeParams, textFieldParams} from "./params_field_types";
+import {checkboxParams, rangeParams, textFieldParams} from "../configs/params_field_types";
 import {isUndefined} from "lodash";
 
 /**
@@ -38,35 +38,14 @@ export function handleChange(comp, value, event) {
 }
 
 
-
-export function generateDialogue( text) {
-   return <div className="modal fade" id="exampleModal" tabIndex="-1" role="dialog" aria-labelledby="exampleModalLabel"
-         aria-hidden="true">
-        <div className="modal-dialog" role="document">
-            <div className="modal-content">
-                <div className="modal-header">
-                    <h5 className="modal-title" id="exampleModalLabel">Modal title</h5>
-                    <button type="button" className="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div className="modal-body">
-                    {text}
-                </div>
-                <div className="modal-footer">
-                    <button type="button" className="btn btn-secondary" data-dismiss="modal">OK</button>
-                </div>
-            </div>
-        </div>
-    </div>
-}
-
-export function renderField(params, id, fieldName, onChange, defaultValue = "") {
+export function renderField(field, params, onChange, defaultValue = "") {
+    const {name, id, placeholder} = field;
     return (
         <div className="form-group">
-            <label style={{marginRight: params.marginRight}} id={fieldName} htmlFor={id}>{fieldName}</label>
+            <label style={{marginRight: params.marginRight}} id={id+name} >{name}</label>
             <input type={params.type === "range" ? "number" : params.type}
                    id={id}
+                   placeholder={placeholder}
                    defaultValue={defaultValue}
                    onChange={onChange}/>
         </div>
@@ -82,28 +61,40 @@ export function stateful(fieldSet, defaultVal) {
 }
 
 export function createLabel(fieldName, tok) {
-    return (<label id={fieldName} htmlFor={tok}>{fieldName}</label>)
+    return (<label id={fieldName} >{fieldName}</label>)
+}
+
+function renderSelectHook(field, inputs, setInputs) {
+    const {id, options, values, name} = field;
+    return <div>
+        {createLabel(name,id)}
+        <select onChange={(event => handleChangeHook(inputs,setInputs, id, event))}>
+            {options.map((o,ix) => {
+                return <option value={values[ix]}>{o}</option>
+            })}
+        </select> ;
+    </div>
 }
 
 export function generateForm(fields, inputs, setInputs, defaultValues = new URLSearchParams()) {
    return fields.map((field) => {
-        const {
-            name, id, type, options, values
-        } = field;
+        const {id, type} = field;
         switch (type) {
             case 'text':
-                return (renderField(textFieldParams, id, name,
+                return (renderField(field, textFieldParams,
                     (e => {
                         handleChangeHook(inputs, setInputs, id, e)
                     }), defaultValues.get(`${id}`)))
             case 'range':
-                return renderRangeInput(id, inputs, setInputs, name, defaultValues)
+                return renderRangeInput(field, inputs, setInputs, defaultValues)
             case 'checkbox':
                 if(isUndefined(inputs[id])) inputs[id] = false;
-                return (renderField(checkboxParams, id, name,
+                return (renderField(field, checkboxParams,
                     (e => handleCheckHook(inputs, setInputs, id, e))));
             case 'radio':
-                return (renderRadioHook(id, inputs, setInputs, values, options, name, defaultValues))
+                return (renderRadioHook(field, inputs, setInputs, defaultValues));
+            case 'select':
+                return (renderSelectHook(field, inputs, setInputs))
             default:
                 return null;
         }
@@ -120,7 +111,8 @@ export function generateButton(label, _func ) {
 }
 
 
-export function renderRangeInput(id, value, valueSetter, label, defaultValues = new URLSearchParams()) {
+export function renderRangeInput(field, value, valueSetter, defaultValues = new URLSearchParams()) {
+    const {id, label} = field;
     const id_min = id + "_min";
     const id_max = id + "_max";
     return (
@@ -128,12 +120,12 @@ export function renderRangeInput(id, value, valueSetter, label, defaultValues = 
             <div className="d-flex align-items-center mt-sm-1 pb-1">
                 <div className="md-form md-outline my-0">
                     {
-                        renderField(rangeParams, id_min, label + ' min',
+                        renderField(field,rangeParams,
                             (event => handleChangeHook(value, valueSetter, id_min, event)), defaultValues.get(id_min))}
                 </div>
                 <div className="md-form md-outline my-0">
                     {
-                        renderField(rangeParams, id_max, label + ' max',
+                        renderField(field, rangeParams,
                             (event => handleChangeHook(value, valueSetter, id_max, event)), defaultValues.get(id_max))}
                 </div>
             </div>
@@ -141,7 +133,8 @@ export function renderRangeInput(id, value, valueSetter, label, defaultValues = 
     )
 }
 
-export function renderRadioHook(id, value, valueSetter,values, options, label, defaultValue = new URLSearchParams()) {
+export function renderRadioHook(field, value, valueSetter, defaultValue = new URLSearchParams()) {
+    const {id, options, values, label} = field;
     return (
         <>
             <div>
@@ -157,28 +150,6 @@ export function renderRadioHook(id, value, valueSetter,values, options, label, d
                                    value={values[ix]}
                                    onChange={(event => handleChangeHook(value, valueSetter, id, event))}
                             />
-                            <label htmlFor={`${id}_${o}`}>{o}</label>
-                        </div>
-                    ))}
-                </ul>
-            </div>
-        </>
-    )
-}
-
-export function renderRadio(comp, id, fieldName, options, values) {
-    return (
-        <>
-            <div>
-                <ul>
-                    {createLabel(fieldName, id)}
-                    {options.map((o, ix) => (
-                        <div className="form-group">
-                            <input type="radio"
-                                   id={`${id}_${o}`}
-                                   value={values[ix]}
-                                   onChange={(event => handleChange(comp, id, event))}
-                                   checked={comp.state[`${id}`] == values[ix]}/>
                             <label htmlFor={`${id}_${o}`}>{o}</label>
                         </div>
                     ))}
