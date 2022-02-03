@@ -69,6 +69,7 @@ async function populateDb(db_id, jsonArr) {
     }
     console.log('\n');
     seq.options.logging = false;
+    await console.log('STARTING BULK CREATE---------------')
     await kernel.bulkCreate(records, {ignoreDuplicates: true});
     seq.options.logging = console.log;
     console.log('Finished loading database!');
@@ -88,23 +89,29 @@ async function initialize() {
             });
             console.log('MySQL HAS RESPONDED');
             connected = true;
-            for (const dbase of databases) {
+            for await (const dbase of databases) {
                 await connection.query(`CREATE DATABASE IF NOT EXISTS \`${dbase.db_id}\`;`);
+                await console.log('CREATED DATABASE')
                 const seq = await new Sequelize(dbase.db_id,
                     mysql_config.user, mysql_config.password, db_parameters);
+                console.log("DEFINING TABLE")
+                const kernel = await seq.define(dbase.name_table,
+                    dbase.model, {tableName: dbase.name_table});
                 await db.mapDbs.set(dbase.db_id, {
                     database: dbase,
                     seq,
-                    kernel: seq.define(dbase.name_table, dbase.model)
+                    kernel
                 });
+                await seq.sync({force: true});
                 if (fileMap.has(dbase.file_path)) {
                     await populateDb(dbase.db_id, fileMap.get(dbase.file_path));
                 } else {
                     await collectDataset(dbase.file_path).then(async (r) => {
+                        console.log("GOING TO POPULATE");
                         await populateDb(dbase.db_id, r);
                     });
                 }
-                await seq.sync();
+
             }
         } catch (e) {
             console.log(e);

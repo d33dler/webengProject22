@@ -18,7 +18,7 @@ exports.databases = [
     {
         id: '1',
         name_verbose: 'NLRentalProperties',
-        name_table: 'properties',
+        name_table: "properties",
         file_path: 'local_databases/properties.json',
         db_id: 'kamernet_db',
         db_config: {
