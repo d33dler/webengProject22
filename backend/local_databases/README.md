@@ -1,0 +1,1 @@
+Place the properties.json file in this folder
