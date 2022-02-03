@@ -29,7 +29,6 @@ exports.create = (req, res) => {
         res.status(400).send({message: 'Missing `Target-Database` header'});
     } else if (db.mapDbs.has(db_target)) {
         processRequest(req.body, db_target).then(body => {
-            console.log("ALREADY RESOLVED")
             db.mapDbs.get(db_target).kernel.create(body)
                 .then(data =>
                     processResponse(req, res, data.getValues(), 200))

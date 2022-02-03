@@ -26,7 +26,7 @@ services:
     ports:
       - $NODE_LOCAL_PORT:$NODE_DOCKER_PORT
     environment:
-      - ConnectionStrings__DefaultConnection=server=mysqldb;port=MYSQLDB_DOCKER_PORT;database=${MYSQLDB_DATABASE_1?:};user=${MYSQLDB_USER?:};password=${MYSQLDB_ROOT_PASSWORD?:}
+      - ConnectionStrings__DefaultConnection=server=mysqldb;port=MYSQLDB_DOCKER_PORT;user=${MYSQLDB_USER?:};password=${MYSQLDB_ROOT_PASSWORD?:}
       - CLIENT_ORIGIN=$CLIENT_ORIGIN
     links:
       - mysqldb
