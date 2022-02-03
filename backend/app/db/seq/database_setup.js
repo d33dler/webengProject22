@@ -3,7 +3,16 @@ const {Sequelize, ARRAY} = require('sequelize');
 const mysql = require('mysql2/promise');
 const fs = require('fs');
 
+/**
+ * Map read databases files. Useful to remove file-reading overhead when
+ * using same file to create multiple separate databases/tables
+ * @type {Map<any, any>}
+ */
 const fileMap = new Map();
+/**
+ * Holds all databases managed by the server during runtime
+ * @type {{mapDbs: Map<any, any>, Sequelize: Sequelize}}
+ */
 const db = {
     Sequelize,
     mapDbs: new Map()
@@ -15,6 +24,7 @@ const BREAK_RECON = 2500;
 const db_parameters = {
     host: mysql_config.host,
     user: mysql_config.user,
+    port: mysql_config.port,
     password: mysql_config.password,
     dialect: mysql_config.dialect,
     pool: {
@@ -31,6 +41,11 @@ function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
+/**
+ * Reads .json files from the specified path
+ * @param filePath path of the database-file-name.json file
+ * @returns {Promise<unknown>} file content as JSON string
+ */
 function collectDataset(filePath) {
     return new Promise((resolve, reject) =>
         fs.readFile(filePath, 'utf8', (err, jsonString) => {
@@ -50,6 +65,12 @@ function collectDataset(filePath) {
         }));
 }
 
+/**
+ *
+ * @param db_id database id
+ * @param jsonArr
+ * @returns {Promise<void>}
+ */
 async function populateDb(db_id, jsonArr) {
     const records = [];
     const {database, seq, kernel} = db.mapDbs.get(db_id);
@@ -74,6 +95,15 @@ async function populateDb(db_id, jsonArr) {
     console.log('Finished loading database!');
 }
 
+/**
+ * Initiates a connection to the local DBMS
+ * If the connection succeeds, creates databases and initiates the required
+ * sequelize objects and defines the table model found in the database config
+ * (this creates the table).
+ * Maps the database in the $db object and syncs the database tables.
+ * Finally, loads the local file data into the database.
+ * @returns {Promise<void>}
+ */
 async function initialize() {
     let connected = false;
 

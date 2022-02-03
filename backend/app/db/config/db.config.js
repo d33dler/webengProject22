@@ -1,9 +1,13 @@
 const undef = '?UNDEFINED?';
 const {DataTypes} = require('sequelize');
+/**
+ * This is a script file defining the databases to be created (if necessary) and used by the backend.
+ */
 
 exports.mysql_config = {
     host: process.env.DB_HOST,
     user: process.env.DB_USER,
+    port: process.env.DB_PORT,
     password: process.env.DB_PASSWORD,
     dialect: 'mysql',
     pool: {
@@ -14,6 +18,9 @@ exports.mysql_config = {
     },
 };
 
+/**
+ * Array of databases
+ */
 exports.databases = [
     {
         id: '1',
@@ -124,5 +131,3 @@ exports.databases = [
     },
 ];
 
-
-// port: process.env.DB_PORT,

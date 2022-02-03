@@ -3,7 +3,10 @@ const property = require('../app/controller/kamernet.controller');
 require('../app/controller/kamernet.controller');
 const nrp_control = require('../app/controller/kamernet.controller');
 const cors = require('cors');
-
+/**
+ * All API routes are specified here
+ * @param app
+ */
 module.exports = (app) => {
   const nrp_control = require('../app/controller/kamernet.controller');
 
