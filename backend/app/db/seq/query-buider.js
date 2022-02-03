@@ -54,7 +54,8 @@ const queryBuilder = (options) => {
 };
 
 /**
- *
+ * Iterates over all query parameters and parses them into an array of objects with
+ * the set of fields [sql operation, parameter, sql operator, argument Array (for array parameters)]
  * @param query raw query received through request
  * @returns {{}|{where: {}}} parsed query
  */
@@ -81,5 +82,5 @@ exports.createQuery = (query) => {
 
         const out = queryBuilder(options);
         if (isUndefined(out.where)) out.where = {};
-        return queryBuilder(options);
+        return out;
 };
