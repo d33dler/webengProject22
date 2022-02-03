@@ -73,6 +73,18 @@ const fields_search = [
         op: 'eq',
     },
     {
+        id: 'latitude',
+        tid: 'latitude',
+        sqlOp: 'where',
+        op: 'eq',
+    },
+    {
+        id: 'longitude',
+        tid: 'longitude',
+        sqlOp: 'where',
+        op: 'eq',
+    },
+    {
         id: 'order',
         tid: 'order',
         sqlOp: 'order',

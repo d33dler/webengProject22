@@ -205,12 +205,12 @@ export function renderRangeInput(field, value, valueSetter, defaultValues = new 
 }
 
 export function renderRadioHook(field, value, valueSetter, defaultValue = new URLSearchParams()) {
-    const {id, options, values, label} = field;
+    const {id, options, values, name} = field;
     return (
         <>
             <div>
+                {createLabel(name, id)}
                 <ul key = {randKey()}>
-                    {createLabel(label, id)}
                     {options.map((o, ix) => (
                         <div className="form-group">
                             <input type="radio"

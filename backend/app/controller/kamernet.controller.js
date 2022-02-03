@@ -13,13 +13,6 @@ const localFunctionsMap = localFunctionMapping();
 
 require('sequelize-values')(Sequelize);
 
-const propAttributes = (data) => {
-    const attrs = {};
-    Object.entries(data).forEach(([key, value]) => {
-        attrs[key] = value;
-    });
-    return attrs;
-};
 
 // Create and upload a new property
 exports.create = (req, res) => {
@@ -142,6 +135,7 @@ exports.delete = (req, res) => {
 exports.search = (req, res) => {
     const conditions = createQuery(req.query);
     const db_target = req.get('Target-Database');
+    console.log(req.query);
     try {
         if (isUndefined(db_target)) {
             res.status(400).send();

@@ -2,7 +2,7 @@ FROM node:16.13.1
 
 WORKDIR /
 
-ENV HOST=0.0.0.0
+#ENV HOST=0.0.0.0
 
 COPY package.json .
 
