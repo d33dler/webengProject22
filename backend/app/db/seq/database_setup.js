@@ -69,7 +69,6 @@ async function populateDb(db_id, jsonArr) {
     }
     console.log('\n');
     seq.options.logging = false;
-    await console.log('STARTING BULK CREATE---------------')
     await kernel.bulkCreate(records, {ignoreDuplicates: true});
     seq.options.logging = console.log;
     console.log('Finished loading database!');
@@ -91,7 +90,7 @@ async function initialize() {
             connected = true;
             for await (const dbase of databases) {
                 await connection.query(`CREATE DATABASE IF NOT EXISTS \`${dbase.db_id}\`;`);
-                await console.log('CREATED DATABASE')
+                await console.log('CREATED DATABASE: ' + dbase.db_id);
                 const seq = await new Sequelize(dbase.db_id,
                     mysql_config.user, mysql_config.password, db_parameters);
                 console.log("DEFINING TABLE")
@@ -107,7 +106,6 @@ async function initialize() {
                     await populateDb(dbase.db_id, fileMap.get(dbase.file_path));
                 } else {
                     await collectDataset(dbase.file_path).then(async (r) => {
-                        console.log("GOING TO POPULATE");
                         await populateDb(dbase.db_id, r);
                     });
                 }
