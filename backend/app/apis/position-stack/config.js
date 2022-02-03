@@ -1,6 +1,12 @@
 const {apiMap, apiGET} = require("../apiManager");
 const _ = require("lodash");
 
+/**
+ * Geocode Earth 3rd party API script
+ * Contains API config and effect function to inject changes into
+ * a data object
+ */
+
 const add_data = {
     querySequence: ['title', 'postalCode', 'city']
 }

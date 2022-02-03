@@ -5,6 +5,10 @@ const app = express();
 const bodyParser = require('body-parser');
 const axios = require('axios');
 
+/**
+ * Server script run by the initialization scripts/ dockers to start the backend app
+ */
+
 require('dotenv').config();
 
 require('nodemon');

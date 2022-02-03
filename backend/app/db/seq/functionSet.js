@@ -1,4 +1,7 @@
 const { sqlFunctions, localFunctionSet} = require('./statistic_sql_fun');
+/**
+ * Script containing all available statistical functions
+ */
 
 const seqFunctions = [
   {
@@ -40,7 +43,10 @@ const localFunctions = [
     col: 'deposit',
   },
 ];
-
+/**
+ *  Mapping function for SQL library functions
+ * @returns {Map<any, any>}
+ */
 const seqFunctionMapping = () => {
   const funMap = new Map();
   const arr = sqlFunctions();
@@ -50,6 +56,11 @@ const seqFunctionMapping = () => {
   }
   return funMap;
 };
+
+/**
+ *  Mapping function for local functions
+ * @returns {Map<any, any>}
+ */
 const localFunctionMapping = () => {
   const arr = localFunctionSet();
   const funMap = new Map();
