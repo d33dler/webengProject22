@@ -12,11 +12,16 @@ const seqFunctionsMap = seqFunctionMapping();
 const localFunctionsMap = localFunctionMapping();
 
 require('sequelize-values')(Sequelize);
+/**
+ * All endpoint functions require the Target-Database header in order to operate.
+ */
 
-
-// Create and upload a new property
+/**
+ * Create a new entry and add it to the database
+ * @param req
+ * @param res
+ */
 exports.create = (req, res) => {
-    // Upload new property in the database
     const db_target = req.get('Target-Database');
     if (isUndefined(db_target)) {
         res.status(400).send({message: 'Missing `Target-Database` header'});
@@ -37,6 +42,12 @@ exports.create = (req, res) => {
     res.status(404).send();
 };
 
+/**
+ * Applied 3rd party apis effects catalogued in the db config
+ * @param body request body
+ * @param db_target used database
+ * @returns {Promise<unknown>} updated body
+ */
 function processRequest(body, db_target) {
     return new Promise( async (resolve) => {
         try {
@@ -56,7 +67,14 @@ exports.trylogin = (req, res) => {
     res.status(200).send('Server is online');
 };
 
-
+/**
+ * Converts the response data into the requested format or defaults to .json
+ * if the format is not found
+ * @param req request
+ * @param res response
+ * @param data response data
+ * @param status status code
+ */
 function processResponse(req, res, data, status = 200) {
     if (req.get('Accept') === 'text/csv') {
         res.set('content-type', 'text/csv');
@@ -78,6 +96,12 @@ function processResponse(req, res, data, status = 200) {
     }
 }
 
+/**
+ * Update the subset of entries satisfying the conditions provided by the query parameters
+ * with the fields in the request body
+ * @param req request
+ * @param res response
+ */
 exports.update = (req, res) => {
     const conditions = createQuery(req.query);
     const fields = req.body;
@@ -105,6 +129,11 @@ exports.update = (req, res) => {
     }
 };
 
+/**
+ * Delete the subset of entries satisfying the conditions provided by the query parameters
+ * @param req request
+ * @param res response
+ */
 exports.delete = (req, res) => {
     const conditions = createQuery(req.query);
     const db_target = req.get('Target-Database');
@@ -131,7 +160,12 @@ exports.delete = (req, res) => {
         });
     }
 };
-
+/**
+ *  Find all entries satisfying the conditions provided by the query parameters
+ * The request query is parsed first into a Sequelize compatible JSON object query
+ * @param req request
+ * @param res response
+ */
 exports.search = (req, res) => {
     const conditions = createQuery(req.query);
     const db_target = req.get('Target-Database');
@@ -161,7 +195,11 @@ exports.search = (req, res) => {
         });
     }
 };
-
+/**
+ * Find all cities that contain the substring found in the 'value' query param
+ * @param req
+ * @param res
+ */
 exports.city_find = (req, res) => {
     const {value} = req.query;
     const db_target = req.get('Target-Database');
@@ -188,7 +226,12 @@ exports.city_find = (req, res) => {
         });
     }
 };
-
+/**
+ * Find all entries satisfying a specific param:value relationship
+ * @param req
+ * @param res
+ * @returns {Promise<void>}
+ */
 exports.param_find = async (req, res) => {
     const {param} = req.params;
     const {value} = req.query;
@@ -218,6 +261,12 @@ exports.param_find = async (req, res) => {
 
 };
 
+/**
+ *
+ * @param seq
+ * @param query
+ * @returns {*[]}
+ */
 function collectAttributes(seq, query) {
     const attr = [];
     Object.entries(query).forEach(
@@ -234,6 +283,12 @@ function collectAttributes(seq, query) {
     return attr;
 }
 
+/**
+ * Executes functions that are not part of the SQL library
+ * @param db_target
+ * @param query
+ * @returns {Promise<*[]>}
+ */
 async function executeLocalFunctions(db_target, query) {
     const attr = [];
     const kernel = db.mapDbs.get(db_target).kernel;
@@ -256,6 +311,14 @@ async function addAllLocalResults(resultSet, response) {
     });
 }
 
+
+/**
+ *  Computes statistical data based on the request query
+ * @param seq
+ * @param req
+ * @param city
+ * @returns {Promise<{res: null, status: number}|{res, status: number}>}
+ */
 async function get_stats(seq, req, city) {
     let response;
     const query = req.query;
@@ -279,6 +342,14 @@ async function get_stats(seq, req, city) {
     return {status: 404, res: null};
 }
 
+/**
+ * Endpoint function to calculate statistical data
+ * the set of functions to be executed depends on the set of provided query params values
+ * where function_id: 'true' translates to the function being applied and result added to the response
+ * @param req
+ * @param res
+ * @returns {Promise<void>}
+ */
 exports.statistics = async (req, res) => {
     let {city} = req.params;
     city = city || '';

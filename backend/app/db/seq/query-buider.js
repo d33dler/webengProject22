@@ -4,12 +4,17 @@ const { queryOp } = require('./query-operators');
 
 const { fieldMap } = require('../fieldSets/fields_search');
 
+
 function loop(arr, instruction, op, _exec) {
     for (let i = 0; i < arr.length; i++) {
         _exec(instruction, op, i);
     }
 }
 
+/**
+ *  Function to construct dynamic sequelize querying instructions
+ *
+ */
 const config = {
     where: (instruction, args) => {
         const { param, operator, argArr } = args;
@@ -48,6 +53,11 @@ const queryBuilder = (options) => {
     return optionsOut;
 };
 
+/**
+ *
+ * @param query raw query received through request
+ * @returns {{}|{where: {}}} parsed query
+ */
 exports.createQuery = (query) => {
     const options = [];
     if (isUndefined(query)) {
