@@ -6,7 +6,7 @@ const seq = Sequelize;
 exports.localFunctionSet = () => {
     const arr = [];
 
-    arr.calc_median_1 = (db, city, param) => db.Properties.findAll({
+    arr.calc_median_1 = (kernel, city, param) => kernel.findAll({
             where: { city: { [Op.like]: `%${city}%` } },
             order: [[param, 'ASC']],
         }).then((out) => {
@@ -19,10 +19,11 @@ exports.localFunctionSet = () => {
                 default:
                     if (vals.length % 2 === 0) {
                         return vals[vals.length / 2][`${param}`];
-                    } return ((vals[Math.floor(vals.length / 2)][`${param}`] + vals[Math.floor(vals.length / 2) + 1][`${param}`]) / 2);
+                    } return ((vals[Math.floor(vals.length / 2)][`${param}`]
+                    + vals[Math.floor(vals.length / 2) + 1][`${param}`]) / 2);
 
             }
-        });
+        }).catch(() => console.log('Client bad request triggered `median` function error'));
     return arr;
 };
 

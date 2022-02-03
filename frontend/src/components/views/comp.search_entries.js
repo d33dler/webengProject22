@@ -6,14 +6,16 @@ import {fields_search, fieldMap, all_fields} from "../configs/fields_search";
 import {creationFields} from "../configs/fields_create";
 import structuredClone from "@ungap/structured-clone"
 import {
-    generateButton, generateForm,
+    checkRepresentation, convertDownloadable,
+    generateButton, generateDownloadLink, generateForm, listValues, randKey, sendRequest,
 } from "../utils/helper_fun";
 import {useNavigate, useParams} from "@reach/router";
 import {useSearchParams} from 'react-router-dom'
-import {fields_meta, formats, meta_default as formatsmeta, meta_default} from "../configs/fields_meta";
+import {metaFields_ALL, formats, meta_default as formatsmeta, meta_default} from "../configs/fields_meta";
+import {update} from "lodash/object";
 
 
-const defaultState = {
+export const defaultState = {
     update: false,
     response: {},
     searched: false,
@@ -31,24 +33,31 @@ const SearchArticle = (props) => {
     const [fieldSet, updateFieldSet] = useState(fields_search);
     const [bulkUpdate, setBulkUpdate] = useState({});
     const [soloUpdate, setSoloUpdate] = useState({});
-    const [meta, setMetaData] = useState(meta_default);
+    const [meta, setMetaData] = useState(structuredClone(meta_default));
     let navigate = useNavigate();
     let [inputs, setInputs] = useState({});
     let [searchParams, setSearchParams] = useSearchParams();
 
     function retrieveEntries() {
-        sendRequest(ArticleService.filterSearch, parseInputs(),
-            "Searching completed", "Server error occurred")
+        sendRequest(ArticleService.filterSearch, updateData,
+            () => setStateParam('response', {}), {
+                data: parseInputs(),
+                meta,
+                msg200: null
+            })
             .then((r) => {
-                if (!isNull(r)) updateEntries(r);
-            });
+                handleResponse(r);
+            }).catch((err) => console.log(err));
     }
 
-    function updateEntries(res) {
-        if (res.headers['content-type'].includes('application/json')) {
-            setEntries(res.data);
-        }
+    function handleResponse(res) {
+        checkRepresentation(res, setEntries, res.data);
         updateData(res);
+    }
+
+    function updateData(res) {
+        setStateParam('response', res.data);
+        convertDownloadable(res, meta, setStateParam)
     }
 
     useEffect(() => {
@@ -73,6 +82,7 @@ const SearchArticle = (props) => {
         navigate("/../nrp/articles/search?" + p, {replace: true});
     }
 
+
     function parseInputs() {
         const inputsCopy = structuredClone(inputs)
         Object.entries(inputsCopy).forEach(([key, value]) => {
@@ -91,7 +101,6 @@ const SearchArticle = (props) => {
         return inputsCopy;
     }
 
-
     function refreshList() {
         setEntries([]);
         setCurrentEntry(null);
@@ -104,8 +113,13 @@ const SearchArticle = (props) => {
     }
 
     function deleteSelectedEntry() {
-        sendRequest(ArticleService.filterDelete, {externalId: currentEntry.externalId},
-            "Delete query accepted rows! Filter properties used\n", "0 entries deleted")
+        sendRequest(ArticleService.filterDelete, updateData,
+            () => setStateParam('response', {}),
+            {
+                data: {externalId: currentEntry.externalId},
+                meta,
+                msg200: "Delete query accepted rows! Filter properties used\n"
+            })
             .then(() => {
                 setEntries([]);
                 refreshList();
@@ -122,10 +136,14 @@ const SearchArticle = (props) => {
             conditions: {externalId: currentEntry.externalId},
             fields: soloUpdate
         }
-        sendRequest(ArticleService.filterUpdate,
-            updateQuery,
-            "Article patch sent! Filter properties used\n" +
-            JSON.stringify(inputs, null, 2), "500 Internal server error").then((r) => {
+        sendRequest(ArticleService.filterUpdate, updateData,
+            () => setStateParam('response', {}),
+            {
+                data: updateQuery,
+                meta,
+                msg200: "Article patch sent! Filter properties used\n" +
+                    JSON.stringify(inputs, null, 2)
+            }).then((r) => {
                 if (!isNull(r)) {
                     setCurrentEntry(prev => ({...prev, ...soloUpdate}))
                 }
@@ -134,62 +152,37 @@ const SearchArticle = (props) => {
     }
 
     function deleteAllEntries() {
-        const parsed = parseInputs()
-        sendRequest(ArticleService.filterDelete, parsed,
-            "Delete query sent! Filter properties used\n" +
-            JSON.stringify(inputs, null, 2), "500 Internal server error").then(() => {
+        sendRequest(ArticleService.filterDelete,
+            updateData,
+            () => setStateParam('response', {}),
+            {
+                data: parseInputs(),
+                meta,
+                msg200: 'Delete query sent! Filter properties used\n' +
+                    JSON.stringify(inputs, null, 2)
+            }).then(() => {
             refreshList();
+        }).catch((err) => {
+            console.log(err)
         });
     }
 
     function updateAllEntries() {
-
-        const parsed = parseInputs()
         const updateQuery = {
-            conditions: parsed,
+            conditions: parseInputs(),
             fields: bulkUpdate
         }
-        sendRequest(ArticleService.filterUpdate, updateQuery,
-            "Article patch sent! Filter properties used\n" +
-            JSON.stringify(inputs, null, 2),
-            "500 Internal server error").then(r => {
-            if (!isUndefined(r)) {
+        sendRequest(ArticleService.filterUpdate, updateData,
+            () => setStateParam('response', {}),
+            {
+                data: updateQuery,
+                meta,
+                msg200: "Article patch sent! Filter properties used\n" +
+                    JSON.stringify(inputs, null, 2)
+            }).then(r => {
                 window.alert("Server says:\nUpdated " + r.data + " rows! <3")
                 refreshList();
-            }
-        });
-
-    }
-
-    async function sendRequest(_request, parsed, msg200, msg500,) {
-        return await _request(parsed, meta)
-            .then(response => {
-                if (response.status === 500) {
-                    window.alert(msg500);
-                    setStateParam('response', {});
-                    return null;
-                } else {
-                    window.alert(msg200);
-                    updateData(response);
-                    return response;
-                }
-            })
-            .catch(e => {
-                console.log(e);
-            });
-    }
-
-    function updateData(res) {
-        let objArr;
-        setStateParam('response', res.data);
-        if (res.headers['content-type'].includes('application/json')) {
-            objArr = JSON.stringify(res.data);
-        } else {
-            objArr = res.data.toString();
-        }
-        setStateParam('download',
-            URL.createObjectURL(new Blob([objArr],
-                {type: meta.Accept})));
+        }).catch(err => {console.log(err)});
     }
 
     function resetState() {
@@ -210,7 +203,7 @@ const SearchArticle = (props) => {
 
     return <div className="list row">
         <div className="col-md-8">
-            {generateForm(fields_meta, meta, setMetaData)}
+            {generateForm(metaFields_ALL, meta, setMetaData)}
             {generateForm(fieldSet, inputs, setInputs, searchParams)}
             <div className="input-group-append">
                 {generateButton("Search", () => {
@@ -224,9 +217,7 @@ const SearchArticle = (props) => {
                     setStateParam('update', true)
                 })}
                 {generateButton("Delete all", deleteAllEntries)}
-                {
-                    <a href={state.download} download>Click to download</a>
-                }
+                {generateDownloadLink(state.download, 'Download file ' + formats[meta.Accept])}
                 {state.update ? <form className="col-md-8">
                     {generateForm(creationFields, bulkUpdate, setBulkUpdate)}
                     {generateButton("Update", () => {
@@ -238,15 +229,15 @@ const SearchArticle = (props) => {
         </div>
         <div className="col-md-6">
             <h4>Article List</h4>
-            <ul className="list-group">
+            <ul key = {randKey()} className="list-group">
                 {entries.length > 0 &&
-                entries.map((entry, index) =>
-                    <li
-                        className={"list-group-item " + (index === currentIndex ? "active" : "")}
-                        onClick={() => setSelection(entry, index)}
-                        key={index}>
-                        {entry.title + ", " + entry.city}
-                    </li>)}
+                    entries.map((entry, index) =>
+                        <li
+                            className={"list-group-item " + (index === currentIndex ? "active" : "")}
+                            onClick={() => setSelection(entry, index)}
+                            key={randKey()}>
+                            {listValues(Object.keys(inputs), entry, Object.keys(inputs).length < 2, 2)}
+                        </li>)}
             </ul>
 
         </div>

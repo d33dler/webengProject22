@@ -2,15 +2,13 @@ import _ from 'lodash';
 import axios from '../http-common';
 
 class BackendRoutes {
-    getById(id) {
-        return axios.get(`articles/id/${id}`);
-    }
 
-    getByParam(param, value) {
+    getByParam(param, value, meta) {
         return axios.get(`articles/${param}`, {
             params: {
                 value: value
-            }
+            },
+            headers: meta
         });
     }
 
@@ -22,7 +20,6 @@ class BackendRoutes {
     }
 
     filterDelete(filter_options, meta) {
-        console.log(filter_options);
         return axios.delete(`articles/search/filter`, {
             params: filter_options,
             headers: meta
@@ -38,70 +35,16 @@ class BackendRoutes {
     }
 
 
-    create(data) {
-        return axios.post('articles/new', data); // test this ?
-    }
-
-    updateById(id, data) {
-        return axios.put(`articles/id/${id}`, data);
-    }
-
-    deleteById(id) {
-        return axios.delete(`articles/id/${id}`);
-    }
-
-    deleteByLocation(lat, long) {
-        return axios.delete('articles/location', {
-            params: {
-                lat: `${lat}`,
-                long: `${long}`,
-            },
+    create(data, meta) {
+        return axios.post('articles/new', data, {
+            headers: meta
         });
     }
 
-    deleteAll() {
-        return axios.delete('articles');
-    }
-
-    findByParameter(allArgs) {
-        return axios.get(
-            'articles/top-list/',
-            {
-                params: _.pick(allArgs, (value, key) => !!value), // test this
-                // probably needs headers
-            },
-        );
-    }
-
-    findByRent(min, max, format) {
-        return axios.get(
-            'articles/search-budget',
-            {
-                params: {
-                    min: `${min}`,
-                    max: `${max}`,
-                    format: `${format}`,
-                },
-            },
-        );
-    }
-
-    findByLocation(lat, long, format) {
-        return axios.get(
-            'articles/location?',
-            {
-                params: {
-                    lat: `${lat}`,
-                    long: `${long}`,
-                    format: `${format}`,
-                },
-            },
-        );
-    }
-
-    getStatistics(city, body) {
+    getStatistics(city, body, meta) {
         return axios.get(`articles/statistics/${city}`, {
-            params: body
+            params: body,
+            headers: meta
         })
     }
 

@@ -1,4 +1,5 @@
 import React, {Component} from "react";
+import {randKey} from "../utils/helper_fun";
 
 
 export default class DisplayEntry extends Component {
@@ -8,17 +9,17 @@ export default class DisplayEntry extends Component {
 
     generateLabel = (clazz, field, color, font) => {
         return (<div className={clazz}>
-                <label style={{color: color, fontWeight: font }} htmlFor={field}>{`${field}`}</label>
+                <label style={{color: color, fontWeight: font}} >{`${field}`}</label>
             </div>
         )
     }
 
     generateDisplay = () => {
         return <div className={"display-entry"}>
-            <ul>
+            <ul key={randKey()}>
                 {Object.entries(this.props.data).map(([k, v]) =>
                     <li key={k}>
-                        {this.generateLabel("field", k+` :`, "blue", "bold")}
+                        {this.generateLabel("field", k + ` :`, "blue", "bold")}
                         {this.generateLabel("value", v, "green", "normal")}
                     </li>
                 )}

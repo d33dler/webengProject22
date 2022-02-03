@@ -1,9 +1,13 @@
 import React, {Component} from "react";
 import {fieldSet} from "../configs/fields_stats";
-import {newState, renderField, createLabel, handleChange} from "../utils/helper_fun";
+import {newState, renderField, createLabel, handleChange, randKey} from "../utils/helper_fun";
 import {Link, useHistory, useLocation} from "react-router-dom";
 import {checkboxParams, textFieldParams} from "../configs/params_field_types";
 import ArticleService from "../../services/backend.routes";
+import {meta_default} from "../configs/fields_meta";
+import {db_config} from "../configs/db_config";
+import {defaultsDeep} from "lodash/object";
+import structuredClone from "@ungap/structured-clone";
 
 
 export default class StatisticForm extends Component {
@@ -16,9 +20,11 @@ export default class StatisticForm extends Component {
             city: '',
             currentEntry: null,
             currentIndex: -1,
+            meta: structuredClone(meta_default)
         };
-
+        this.state.meta['Target-Database'] = 'cities_db';
     }
+
     refreshList = () => {
         this.setState({
             currentEntry: null,
@@ -28,7 +34,7 @@ export default class StatisticForm extends Component {
     retrieveEntries = () => {
         this.refreshList()
         const {city} = this.state;
-        ArticleService.getByParam('city', city)
+        ArticleService.getByParam('city', city, this.state.meta)
             .then(response => {
                 let data;
                 if (response.status === 204) {
@@ -74,20 +80,20 @@ export default class StatisticForm extends Component {
                 <div className="col-md-6">
                     <h4 style={{paddingTop: `25px`}}>Article List</h4>
 
-                    <ul className="list-group">
+                    <ul key = {randKey()} className="list-group">
                         {entries &&
-                        entries.map((entry, index) => (
-                            <li
-                                className={
-                                    "list-group-item " +
-                                    (index === currentIndex ? "active" : "")
-                                }
-                                onClick={() => this.setSelection(entry, index)}
-                                key={index}
-                            >
-                                {index + ". " + entry.city}
-                            </li>
-                        ))}
+                            entries.map((entry, index) => (
+                                <li
+                                    className={
+                                        "list-group-item " +
+                                        (index === currentIndex ? "active" : "")
+                                    }
+                                    onClick={() => this.setSelection(entry, index)}
+                                    key={index}
+                                >
+                                    {(index+1) + ". " + entry.city}
+                                </li>
+                            ))}
                     </ul>
                 </div>
                 <div className={"position-absolute top-75 start-75"}>

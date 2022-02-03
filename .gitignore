@@ -1,10 +1,12 @@
+
+
 # custom ignores
 *.gpkg
 *.geojson
 .idea/
 
 # The dataset
-backend/properties.json
+backend/local_databases/properties.json
 
 # Lock files
 backend/package-lock.json

@@ -1,9 +1,13 @@
-const { mysql_config, databases } = require('../db.config');
-const { Sequelize, ARRAY } = require('sequelize');
+const {mysql_config, databases} = require('../config/db.config');
+const {Sequelize, ARRAY} = require('sequelize');
 const mysql = require('mysql2/promise');
 const fs = require('fs');
 
-const db = {};
+const fileMap = new Map();
+const db = {
+    Sequelize,
+    mapDbs: new Map()
+};
 const ProgressBar = require('progress');
 
 const BREAK_RECON = 2500;
@@ -24,29 +28,31 @@ const db_parameters = {
 initialize();
 
 function sleep(ms) {
-    return new Promise((resolve) => setTimeout(resolve, ms));
+    return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-function collectDataset() {
-    fs.readFile('properties.json', 'utf8', (err, jsonString) => {
-        if (err) {
-            console.log('File read failed:', err);
-            return;
-        }
-        try {
-            const properties = JSON.parse(jsonString);
-            populateDb(properties);
-        } catch (err) {
-            console.log('Error parsing JSON string:', err);
-            return false;
-        }
-    });
-    return true;
+function collectDataset(filePath) {
+    return new Promise((resolve, reject) =>
+        fs.readFile(filePath, 'utf8', (err, jsonString) => {
+            if (err) {
+                console.log('File read failed:', err);
+                reject(err);
+                return
+            }
+            try {
+                const jsonObj = JSON.parse(jsonString);
+                fileMap.set(filePath, jsonObj);
+                resolve(jsonObj);
+            } catch (err) {
+                console.log('Error parsing JSON string:', err);
+                reject(err);
+            }
+        }));
 }
 
-async function populateDb(jsonArr) {
-    const kamernetRecords = [];
-    const cities = [];
+async function populateDb(db_id, jsonArr) {
+    const records = [];
+    const {database, seq, kernel} = db.mapDbs.get(db_id);
     const bar = new ProgressBar('processing [:bar] :rate items per second :percent :etas', {
         complete: '=',
         incomplete: ' ',
@@ -55,19 +61,16 @@ async function populateDb(jsonArr) {
     });
     for (let i = 0; i < jsonArr.length; i++) {
         const record = {};
-        Object.keys(databases[0].model).forEach((key) => {
-                record[key] = jsonArr[i][key];
+        Object.keys(database.model).forEach((key) => {
+            record[key] = jsonArr[i][key];
         });
-        kamernetRecords.push(record);
-        cities.push({ city: jsonArr[i].city });
+        records.push(record);
         bar.tick();
     }
     console.log('\n');
-    db.sequelizeProperties.options.logging = false;
-    db.sequelizeCities.options.logging = false;
-    await db.Properties.bulkCreate(kamernetRecords, { ignoreDuplicates: true });
-    await db.Cities.bulkCreate(cities, { ignoreDuplicates: true });
-    db.sequelizeProperties.options.logging = console.log;
+    seq.options.logging = false;
+    await kernel.bulkCreate(records, {ignoreDuplicates: true});
+    seq.options.logging = console.log;
     console.log('Finished loading database!');
 }
 
@@ -85,19 +88,24 @@ async function initialize() {
             });
             console.log('MySQL HAS RESPONDED');
             connected = true;
-            // eslint-disable-next-line camelcase
-            await connection.query(`CREATE DATABASE IF NOT EXISTS \`${mysql_config.KAMERNET_DB}\`;`);
-            await connection.query(`CREATE DATABASE IF NOT EXISTS \`${mysql_config.CITIES_DB}\`;`);
-            const seqPropertiesDb = new Sequelize(mysql_config.KAMERNET_DB, mysql_config.user, mysql_config.password, db_parameters);
-            const seqCitiesDb = new Sequelize(mysql_config.CITIES_DB, mysql_config.user, mysql_config.password, db_parameters);
-            db.Sequelize = Sequelize;
-            db.sequelizeProperties = seqPropertiesDb;
-            db.sequelizeCities = seqCitiesDb;
-            db.Properties = require('./kamernet.model.js')(seqPropertiesDb, Sequelize);
-            db.Cities = require('./cities.model.js')(seqCitiesDb, Sequelize);
-            collectDataset();
-            await seqPropertiesDb.sync();
-            await seqCitiesDb.sync();
+            for (const dbase of databases) {
+                await connection.query(`CREATE DATABASE IF NOT EXISTS \`${dbase.db_id}\`;`);
+                const seq = await new Sequelize(dbase.db_id,
+                    mysql_config.user, mysql_config.password, db_parameters);
+                await db.mapDbs.set(dbase.db_id, {
+                    database: dbase,
+                    seq,
+                    kernel: seq.define(dbase.name_table, dbase.model)
+                });
+                if (fileMap.has(dbase.file_path)) {
+                    await populateDb(dbase.db_id, fileMap.get(dbase.file_path));
+                } else {
+                    await collectDataset(dbase.file_path).then(async (r) => {
+                        await populateDb(dbase.db_id, r);
+                    });
+                }
+                await seq.sync();
+            }
         } catch (e) {
             console.log(e);
             await sleep(BREAK_RECON);

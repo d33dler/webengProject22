@@ -5,7 +5,7 @@ npm run server & pids=$!
 sleep 5
 
 cd ../frontend
-npm start  & pids+=" $!"
+npm start & pids+=" $!"
 
 trap "kill $pids" SIGTERM SIGINT
 wait $pids

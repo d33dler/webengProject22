@@ -10,3 +10,8 @@ export const checkboxParams = {
     type: 'checkbox',
     marginRight: '10px'
 }
+
+export const numberParams = {
+    type: 'number',
+    marginRight: '250px'
+}

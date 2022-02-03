@@ -20,17 +20,17 @@ const App = () => {
                             Netherlands Rental Properties
                         </Link>
                         <div className="navbar-nav mr-auto">
-                            <li className="nav-item">
+                            <li key='search' className="nav-item">
                                 <Link to={"nrp/articles/search?limit=5"} className="nav-link">
                                     Search
                                 </Link>
                             </li>
-                            <li className="nav-item">
+                            <li key="create" className="nav-item">
                                 <Link to={"nrp/articles/create"} className="nav-link">
                                     Add
                                 </Link>
                             </li>
-                            <li className="nav-item">
+                            <li key="stats" className="nav-item">
                                 <Link to={"nrp/articles/stats"} className="nav-link">
                                     Statistics
                                 </Link>

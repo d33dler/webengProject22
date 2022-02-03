@@ -1,6 +1,6 @@
 const express = require('express');
 const cors = require('cors');
-
+const apiManager = require('./app/apis/apiManager')
 const app = express();
 const bodyParser = require('body-parser');
 const axios = require('axios');
@@ -11,6 +11,8 @@ require('nodemon');
 require('ngrok');
 const path = require('path');
 
+apiManager.map();
+
 const corsSettings = {
     origin: '*',
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
@@ -20,11 +22,13 @@ app.use(cors(corsSettings));
 // parse requests of content-type - application/json
 app.use(express.json());
 // parse requests of content-type - application/x-www-form-urlencoded
-
+/*
 app.use(express.static(path.join(__dirname, 'frontend_build')));
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'frontend_build', 'index.html'));
 });
+ */
+
 app.use(express.urlencoded({ extended: true }));
 require('./routes/kamernet.routes')(app);
 
