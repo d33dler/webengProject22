@@ -24,7 +24,9 @@ export const defaultState = {
     customFormat: true,
     download: null
 }
-
+/**
+ * Component used for generating the page used for Search, Delete & Update operations on the database
+ */
 const SearchArticle = (props) => {
     const [state, setState] = useState(defaultState);
     const [entries, setEntries] = useState([]);
@@ -38,6 +40,11 @@ const SearchArticle = (props) => {
     let [inputs, setInputs] = useState({});
     let [searchParams, setSearchParams] = useSearchParams();
 
+    /**
+     * Sends GET request to the backend and retrieves all entries
+     * that satisfy the input constraints
+     * The inputs are parsed first
+     */
     function retrieveEntries() {
         sendRequest(ArticleService.filterSearch, updateData,
             () => setStateParam('response', {}), {
@@ -60,6 +67,9 @@ const SearchArticle = (props) => {
         convertDownloadable(res, meta, setStateParam)
     }
 
+    /**
+     * Retrieves entities automatically upon page access
+     */
     useEffect(() => {
         all_fields.forEach((obj) => {
             const param = searchParams.get(`${obj.id}`);
@@ -82,7 +92,11 @@ const SearchArticle = (props) => {
         navigate("/../nrp/articles/search?" + p, {replace: true});
     }
 
-
+    /**
+     * Parse input data for the request
+     * Constructs arrays for parent-child form fields
+     * @returns {*}
+     */
     function parseInputs() {
         const inputsCopy = structuredClone(inputs)
         Object.entries(inputsCopy).forEach(([key, value]) => {
@@ -108,10 +122,14 @@ const SearchArticle = (props) => {
     }
 
     function setSelection(entry, index) {
-        setCurrentEntry(entry);
+        setCurrentEntry(entry);Update
         setIndex(index);
     }
 
+    /**
+     * Send DELETE request to remove a singular entry
+     * Simply uses the selected entry primary key
+     */
     function deleteSelectedEntry() {
         sendRequest(ArticleService.filterDelete, updateData,
             () => setStateParam('response', {}),
@@ -131,6 +149,10 @@ const SearchArticle = (props) => {
         setStateParam("singleUpdate", true);
     }
 
+    /**
+     * Send UPDATE request which updates a singular entry
+     * Simply uses the selected entry primary key (externalId)
+     */
     function updateSelectedEntry() {
         const updateQuery = {
             conditions: {externalId: currentEntry.externalId},
@@ -151,6 +173,10 @@ const SearchArticle = (props) => {
         );
     }
 
+    /**
+     * Send DELETE request to the backend endpoint
+     * Conditions are parsed and sent as request query params
+     */
     function deleteAllEntries() {
         sendRequest(ArticleService.filterDelete,
             updateData,
@@ -167,6 +193,11 @@ const SearchArticle = (props) => {
         });
     }
 
+    /**
+     * Sends PATCH request to update all entries that satisfy the input constraints
+     * Inputs are parsed and sent as request query params
+     * Update data is placed in the request body.
+     */
     function updateAllEntries() {
         const updateQuery = {
             conditions: parseInputs(),
@@ -201,6 +232,9 @@ const SearchArticle = (props) => {
         }))
     }
 
+    /**
+     * React JSX render
+     */
     return <div className="list row">
         <div className="col-md-8">
             {generateForm(metaFields_ALL, meta, setMetaData)}

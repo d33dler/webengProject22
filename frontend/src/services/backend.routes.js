@@ -1,6 +1,11 @@
 import _ from 'lodash';
 import axios from '../http-common';
 
+/**
+ * All routes offered by the backend are specified here
+ * The functions are accessed by the components found in the /views paths
+ * to send requests
+ */
 class BackendRoutes {
 
     getByParam(param, value, meta) {

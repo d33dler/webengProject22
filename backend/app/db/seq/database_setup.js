@@ -142,7 +142,7 @@ async function initialize() {
 
             }
         } catch (e) {
-            console.log(e);
+            console.log("Waiting for DBMS connection...");
             await sleep(BREAK_RECON);
         }
     }
